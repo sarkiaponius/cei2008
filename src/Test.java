@@ -17,6 +17,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
+import bible.*;
+
 public class Test
 {
 
@@ -39,22 +41,25 @@ public class Test
 		{
 			url = new URL("http://www.verbumweb.net/it/bibbia/Genesi.epub");
 			InputStream in = url.openStream();
-			Book book = epubReader.readEpub(in);
+			Book inBook = epubReader.readEpub(in);
+			bible.Book book = new bible.Book();
+			book.setTitle(libriMap.getProperty(inBook.getTitle()));
 			String title = book.getTitle();
 			System.out.println(title);
-			title = libriMap.getProperty(title);
 			Iterator<SpineReference> ir;
-			ir = book.getSpine().getSpineReferences().iterator();
+			ir = inBook.getSpine().getSpineReferences().iterator();
 			while (ir.hasNext())
 			{
 				Resource res = ir.next().getResource();
 				System.out.println(res.getHref());
 				String text = new String(res.getData());
 				Document doc = Jsoup.parse(text);
-				String chapter = doc.title();
-				if (chapter.startsWith("Cap."))
+				String inChapter = doc.title();
+				if (inChapter.startsWith("Cap."))
 				{
-					chapter = chapter.substring(5);
+					inChapter = inChapter.substring(5);
+					Chapter chapter = new Chapter(inChapter);
+					book.addChapter(chapter);
 					Iterator<Element> parIter;
 					parIter = doc.body().getElementsByTag("p").iterator();
 					while (parIter.hasNext())
@@ -67,12 +72,23 @@ public class Test
 						{
 							String vText = vTextIter.next().getWholeText();
 							String vNumb = vNumbIter.next().text();
-							String stanza = "$$$";
-							stanza += title + ".";
-							stanza += chapter + ".";
-							stanza += vNumb + "\n";
-							stanza += vText;
-							System.out.println(stanza);
+							chapter.addVerse(vText, vNumb);
+						}
+						Iterator<Chapter> chaps = book.getChapters();
+						while (chaps.hasNext())
+						{
+							Chapter c = chaps.next();
+							Iterator<Verse> verses = c.getVerses();
+							while (verses.hasNext())
+							{
+								Verse v = verses.next();
+								String stanza = "$$$";
+								stanza += book.getTitle() + ".";
+								stanza += c.getNumber() + ".";
+								stanza += v.getNumber() + "\n";
+								stanza += v.getText();
+								System.out.println(stanza);
+							}
 						}
 					}
 				}

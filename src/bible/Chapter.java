@@ -6,9 +6,17 @@ import java.util.Iterator;
 public class Chapter
 {
 	private ArrayList<Verse> verses;
-	public Chapter()
+	private int number;
+	public Chapter(int n)
 	{
-		
+		verses = new ArrayList<Verse>();
+		setNumber(n);
+	}
+	
+	public Chapter(String n)
+	{
+		verses = new ArrayList<Verse>();
+		setNumber(Integer.parseInt(n));
 	}
 	
 	public void addVerse(Verse v)
@@ -19,6 +27,21 @@ public class Chapter
 	public void addVerse(String t, int n)
 	{
 		verses.add(new Verse(t, n));
+	}
+	
+	public void addVerse(String t, String n)
+	{
+		verses.add(new Verse(t, Integer.parseInt(n)));
+	}
+	
+	public void setNumber(int n)
+	{
+		number = n;
+	}
+	
+	public int getNumber()
+	{
+		return number;
 	}
 	
 	public Iterator<Verse> getVerses()

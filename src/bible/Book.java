@@ -6,7 +6,24 @@ import java.util.Iterator;
 public class Book
 {
   private ArrayList<Chapter> chapters;
-  public void addChapter(Chapter c)
+  private String title;
+  
+  public Book()
+  {
+  	chapters = new ArrayList<Chapter>();
+  }
+  
+  public void setTitle(String t)
+  {
+  	title = new String(t);
+  }
+  
+  public String getTitle()
+	{
+		return title;
+	}
+
+	public void addChapter(Chapter c)
   {
   	chapters.add(c);
   }
