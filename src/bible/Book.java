@@ -24,6 +24,7 @@ public class Book
 	private ArrayList<Chapter> chapters;
 	private String title;
 	private Properties libriMap;
+	private String verseSpanClass;
 
 	public Book()
 	{
@@ -32,17 +33,17 @@ public class Book
 		try
 		{
 			libriMap.load(new FileReader("libri.map"));
-		} catch (FileNotFoundException e1)
+		} catch(FileNotFoundException e1)
 		{
 			e1.printStackTrace();
-		} catch (IOException e1)
+		} catch(IOException e1)
 		{
 			e1.printStackTrace();
 		}
 		chapters = new ArrayList<Chapter>();
 	}
 
-	public void load(String u)
+	public void testLoad(String u)
 	{
 		EpubReader er = new EpubReader();
 		Iterator<SpineReference> ir = null;
@@ -54,16 +55,16 @@ public class Book
 			in.close();
 			setTitle(libriMap.getProperty(inBook.getTitle()));
 			ir = inBook.getSpine().getSpineReferences().iterator();
-		} catch (MalformedURLException e)
+		} catch(MalformedURLException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e)
+		} catch(IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		while (ir.hasNext())
+		while(ir.hasNext())
 		{
 			Resource res = ir.next().getResource();
 			System.out.println(res.getHref());
@@ -71,40 +72,40 @@ public class Book
 			try
 			{
 				text = new String(res.getData());
-			} catch (IOException e)
+			} catch(IOException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			Document doc = Jsoup.parse(text);
 			String inChapter = doc.title();
-			if (inChapter.startsWith("Cap."))
+			if(inChapter.startsWith("Cap."))
 			{
 				inChapter = inChapter.substring(5);
-				Chapter chapter = new Chapter(inChapter);
 				Iterator<Element> parIter;
 				parIter = doc.body().getElementsByTag("p").iterator();
-				while (parIter.hasNext())
+				int count = 0;
+				if(parIter.hasNext())
 				{
 					Element para = parIter.next();
-					Iterator<Element> vNumbIter;
-					vNumbIter = para.getElementsByTag("span").iterator();
-					Iterator<TextNode> vTextIter = para.textNodes().iterator();
-					while (vTextIter.hasNext() && vNumbIter.hasNext())
+					Iterator<Element> children = para.children().listIterator();
+					if(children.hasNext())
 					{
-						Element vNumbNode = vNumbIter.next();
-						TextNode vTextNode = vTextIter.next();
-						if (vNumbNode.attr("class").equals("t6"))
+						Element child = children.next();
+
+						if(child.hasAttr("class"))
 						{
-							String vText = vTextNode.getWholeText();
-							String vNumb = vNumbNode.text();
-							chapter.addVerse(vText, vNumb);
-							System.err.println("Wrong verse number " + vNumb
-									+ ", verse discarded");
+							verseSpanClass = child.attr("class");
 						}
+						System.err.println(verseSpanClass);
 					}
+					// while(children.hasNext())
+					// {
+					// Element child = children.next();
+					// verseSpanClass = child.attr("class");
+					// System.err.println(++count + ": " + child.nodeName());
+					// }
 				}
-				addChapter(chapter);
 			}
 		}
 	}
@@ -124,8 +125,52 @@ public class Book
 		chapters.add(c);
 	}
 
+	public void addChapter(Document d)
+	{
+		chapters.add(new Chapter(d));
+	}
+	
 	public Iterator<Chapter> getChapters()
 	{
 		return chapters.iterator();
+	}
+
+	public void load(String u)
+	{
+		EpubReader er = new EpubReader();
+		Iterator<SpineReference> ir = null;
+		try
+		{
+			URL url = new URL(u);
+			InputStream in = url.openStream();
+			nl.siegmann.epublib.domain.Book inBook = er.readEpub(in);
+			in.close();
+			setTitle(libriMap.getProperty(inBook.getTitle()));
+			ir = inBook.getSpine().getSpineReferences().iterator();
+		} catch(MalformedURLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch(IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		while(ir.hasNext())
+		{
+			Resource res = ir.next().getResource();
+			System.out.println(res.getHref());
+			String text = null;
+			try
+			{
+				text = new String(res.getData());
+			} catch(IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Document doc = Jsoup.parse(text);
+			addChapter(doc);
+		}
 	}
 }
