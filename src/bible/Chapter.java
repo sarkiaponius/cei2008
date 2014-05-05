@@ -1,14 +1,11 @@
 package bible;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-import org.jsoup.parser.Tag;
-import org.jsoup.select.Elements;
 
 public class Chapter
 {
@@ -31,10 +28,10 @@ public class Chapter
 	public Chapter(Document d)
 	{
 		verses = new ArrayList<Verse>();
-		String inChapter = d.title();
-		if(inChapter.startsWith("Cap."))
+		String title = d.title();
+		if(title.startsWith("Cap."))
 		{
-			setNumber(inChapter.substring(5));
+			setNumber(title.substring(5));
 			Iterator<Element> parIter;
 			parIter = d.body().getElementsByTag("p").iterator();
 
@@ -55,7 +52,6 @@ public class Chapter
 					{
 						verseSpanClass = child.attr("class");
 					}
-					// System.err.println(verseSpanClass);
 				}
 			}
 			String query = "span:not([class=" + verseSpanClass + "])";
@@ -69,7 +65,7 @@ public class Chapter
  * Bisogna rimuovere ogni altro tag "span"
  */
 				para.select(query).unwrap();
-				System.err.println(para.html());
+//				System.err.println(para.html());
 				
 // l'unwrap funziona, ma lascia invariati i textNode; questo è l'unico modo per 
 // farli adeguare al nuovo contenuto HTML del para.
@@ -78,7 +74,6 @@ public class Chapter
 				
 				if(para.hasText() && !para.html().equals("&nbsp;"))
 				{
-					// System.err.println("para: " + para.html());
 					Iterator<TextNode> vTextIter;
 					vTextIter = para.textNodes().iterator();
 					while(vTextIter.hasNext())
@@ -90,11 +85,11 @@ public class Chapter
 							try
 							{
 								addVerse(vText, ++vNumb);
-								System.err.println(vNumb + ": [" + vText.trim() + "]");
+//								System.err.println(vNumb + ": [" + vText.trim() + "]");
 							} catch(NumberFormatException e)
 							{
-								System.err.println("Wrong verse number " + vNumb
-										+ ", verse discarded");
+//								System.err.println("Wrong verse number " + vNumb
+//										+ ", verse discarded");
 							}
 						}
 					}

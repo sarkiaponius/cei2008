@@ -10,14 +10,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
-
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.SpineReference;
 import nl.siegmann.epublib.epub.EpubReader;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 public class Book
 {
@@ -67,7 +66,7 @@ public class Book
 		while(ir.hasNext())
 		{
 			Resource res = ir.next().getResource();
-			System.out.println(res.getHref());
+			System.err.println(res.getHref());
 			String text = null;
 			try
 			{
@@ -84,7 +83,6 @@ public class Book
 				inChapter = inChapter.substring(5);
 				Iterator<Element> parIter;
 				parIter = doc.body().getElementsByTag("p").iterator();
-				int count = 0;
 				if(parIter.hasNext())
 				{
 					Element para = parIter.next();
@@ -149,24 +147,21 @@ public class Book
 			ir = inBook.getSpine().getSpineReferences().iterator();
 		} catch(MalformedURLException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch(IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		while(ir.hasNext())
 		{
 			Resource res = ir.next().getResource();
-			System.out.println(res.getHref());
+			System.err.println(res.getHref());
 			String text = null;
 			try
 			{
 				text = new String(res.getData());
 			} catch(IOException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			Document doc = Jsoup.parse(text);
