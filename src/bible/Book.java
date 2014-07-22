@@ -155,7 +155,7 @@ public class Book
 		while(ir.hasNext())
 		{
 			Resource res = ir.next().getResource();
-			System.err.println(res.getHref());
+//			System.err.println(res.getHref());
 			String text = null;
 			try
 			{

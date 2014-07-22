@@ -14,18 +14,21 @@ public class Test
 		BufferedReader titles = new BufferedReader(new FileReader("url.map"));
 		String title = null;
 		String baseUrl = "http://www.verbumweb.net/it/bibbia/";
+		int count = 0;
 		while(titles.ready())
 		{
+			System.out.println(++count);
 			title = titles.readLine();
+			System.out.println("titolo in lista: " + baseUrl + title + ".epub");
 			bible.Book book = new bible.Book();
 			book.load(baseUrl + title + ".epub");
-			System.err.println(title);
+			System.out.println(title);
 			Iterator<Chapter> chaps = book.getChapters();
 			while(chaps.hasNext())
 			{
 				Chapter c = chaps.next();
 				Iterator<Verse> verses = c.getVerses();
-				while (verses.hasNext())
+				while(verses.hasNext())
 				{
 					Verse v = verses.next();
 					String stanza = "$$$";
@@ -34,6 +37,7 @@ public class Test
 					stanza += v.getNumber() + "\n";
 					stanza += v.getText();
 					System.out.println(stanza);
+//					System.out.println(v.getText());
 				}
 			}
 		}

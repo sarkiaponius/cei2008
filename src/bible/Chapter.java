@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
 public class Chapter
@@ -34,67 +35,73 @@ public class Chapter
 			setNumber(title.substring(5));
 			Iterator<Element> parIter;
 			parIter = d.body().getElementsByTag("p").iterator();
-
-/*
- * Va individuata la class dello span usato per distinguere i versetti. Di
- * solito il primo paragrafo è un versetto, e comincia con questo span.
- */
-			if(parIter.hasNext())
-			{
-				Element para = parIter.next();
-
-				Iterator<Element> children = para.children().listIterator();
-				if(children.hasNext())
-				{
-					Element child = children.next();
-
-					if(child.hasAttr("class"))
-					{
-						verseSpanClass = child.attr("class");
-					}
-				}
-			}
-			String query = "span:not([class=" + verseSpanClass + "])";
-			parIter = d.body().getElementsByTag("p").iterator();
 			int vNumb = 0;
+			Verse verse = null;
+			Node node = null;
 			while(parIter.hasNext())
 			{
 				Element para = parIter.next();
-
-/*
- * Bisogna rimuovere ogni altro tag "span"
- */
-				para.select(query).unwrap();
-//				System.err.println(para.html());
-				
-// l'unwrap funziona, ma lascia invariati i textNode; questo è l'unico modo per 
-// farli adeguare al nuovo contenuto HTML del para.
-				
-				para = new Element(para.tag(), para.baseUri()).append(para.html());
-				
-				if(para.hasText() && !para.html().equals("&nbsp;"))
+				Iterator<Node> nodes = para.childNodes().iterator();
+				System.out.println(para.html());
+				boolean isFirstNode = true;
+				boolean skipNextVerse = false;
+				while(nodes.hasNext())
 				{
-					Iterator<TextNode> vTextIter;
-					vTextIter = para.textNodes().iterator();
-					while(vTextIter.hasNext())
+					node = nodes.next();
+//					System.out.println("nodo [" + node.toString() + "]");
+					if(node instanceof Element)
 					{
-						TextNode vTextNode = vTextIter.next();
-						String vText = vTextNode.text().trim();
-						if(!vText.equalsIgnoreCase(" "))
+//						System.out.println("il nodo è un elemento");
+						if(((Element) node).tagName() == "span")
 						{
-							try
+//							System.out.println("il nodo è uno span");
+							if(isFirstNode)
 							{
-								addVerse(vText, ++vNumb);
-//								System.err.println(vNumb + ": [" + vText.trim() + "]");
-							} catch(NumberFormatException e)
+//								System.out.println("il nodo è il primo nodo");
+								isFirstNode = false;
+								verseSpanClass = node.attr("class");
+							}
+							if(node.attr("class").equals(verseSpanClass))
 							{
-//								System.err.println("Wrong verse number " + vNumb
-//										+ ", verse discarded");
+//								System.out.println("il nodo è di tipo vNumb, creo un verso");
+//								System.out.println(((Element) node).ownText());
+								try
+								{
+									vNumb = Integer.parseInt(((Element) node).ownText());
+								}
+								catch(java.lang.NumberFormatException e)
+								{
+									vNumb = 1;
+									skipNextVerse = true;
+								}
+								if(verse != null)
+								{
+									addVerse(verse);
+								}
+								verse = new Verse(vNumb);
+							}
+							else
+							{
+//								System.out.println("il nodo non è di tipo vNumb");
+								verse.appendText(((Element) node).ownText());
 							}
 						}
+						else
+						{
+//							System.out.println("il nodo è un elemento non span");
+							verse.appendText(((Element) node).ownText());
+						}
+					}
+					else
+					{
+						String t = ((TextNode) node).text();
+//						System.out.println("il nodo non è un elemento (" + t + ")");
+						verse.appendText(t);
+//						System.out.println(verse.getText());
 					}
 				}
 			}
+			verse.appendText(((TextNode) node).text());
 		}
 	}
 
