@@ -19,25 +19,28 @@ public class Test
 		{
 			System.out.println(++count);
 			title = titles.readLine();
-			System.out.println("titolo in lista: " + baseUrl + title + ".epub");
-			bible.Book book = new bible.Book();
-			book.load(baseUrl + title + ".epub");
-			System.out.println(title);
-			Iterator<Chapter> chaps = book.getChapters();
-			while(chaps.hasNext())
+			if(! title.startsWith("#"))
 			{
-				Chapter c = chaps.next();
-				Iterator<Verse> verses = c.getVerses();
-				while(verses.hasNext())
+				System.out.println("titolo in lista: " + baseUrl + title + ".epub");
+				bible.Book book = new bible.Book();
+				book.load(baseUrl + title + ".epub");
+				System.out.println(title);
+				Iterator<Chapter> chaps = book.getChapters();
+				while(chaps.hasNext())
 				{
-					Verse v = verses.next();
-					String stanza = "$$$";
-					stanza += book.getTitle() + ".";
-					stanza += c.getNumber() + ".";
-					stanza += v.getNumber() + "\n";
-					stanza += v.getText();
-					System.out.println(stanza);
-//					System.out.println(v.getText());
+					Chapter c = chaps.next();
+					Iterator<Verse> verses = c.getVerses();
+					while(verses.hasNext())
+					{
+						Verse v = verses.next();
+						String stanza = "$$$";
+						stanza += book.getTitle() + ".";
+						stanza += c.getNumber() + ".";
+						stanza += v.getNumber() + "\n";
+						stanza += v.getText();
+						System.out.println(stanza);
+						// System.out.println(v.getText());
+					}
 				}
 			}
 		}

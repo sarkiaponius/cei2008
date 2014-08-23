@@ -143,6 +143,7 @@ public class Book
 			InputStream in = url.openStream();
 			nl.siegmann.epublib.domain.Book inBook = er.readEpub(in);
 			in.close();
+			System.err.println(inBook.getTitle());
 			setTitle(libriMap.getProperty(inBook.getTitle()));
 			ir = inBook.getSpine().getSpineReferences().iterator();
 		} catch(MalformedURLException e)

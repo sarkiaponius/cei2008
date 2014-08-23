@@ -42,29 +42,29 @@ public class Chapter
 			{
 				Element para = parIter.next();
 				Iterator<Node> nodes = para.childNodes().iterator();
-				System.out.println(para.html());
+//				System.out.println(para.html());
 				boolean isFirstNode = true;
 				boolean skipNextVerse = false;
 				while(nodes.hasNext())
 				{
 					node = nodes.next();
-//					System.out.println("nodo [" + node.toString() + "]");
+					System.out.println("nodo [" + node.toString() + "]");
 					if(node instanceof Element)
 					{
-//						System.out.println("il nodo è un elemento");
+						// System.out.println("il nodo è un elemento");
 						if(((Element) node).tagName() == "span")
 						{
-//							System.out.println("il nodo è uno span");
+							// System.out.println("il nodo è uno span");
 							if(isFirstNode)
 							{
-//								System.out.println("il nodo è il primo nodo");
+								// System.out.println("il nodo è il primo nodo");
 								isFirstNode = false;
 								verseSpanClass = node.attr("class");
 							}
 							if(node.attr("class").equals(verseSpanClass))
 							{
-//								System.out.println("il nodo è di tipo vNumb, creo un verso");
-//								System.out.println(((Element) node).ownText());
+								// System.out.println("il nodo è di tipo vNumb, creo un verso");
+								// System.out.println(((Element) node).ownText());
 								try
 								{
 									vNumb = Integer.parseInt(((Element) node).ownText());
@@ -82,26 +82,38 @@ public class Chapter
 							}
 							else
 							{
-//								System.out.println("il nodo non è di tipo vNumb");
+								// System.out.println("il nodo non è di tipo vNumb");
 								verse.appendText(((Element) node).ownText());
 							}
 						}
 						else
 						{
-//							System.out.println("il nodo è un elemento non span");
+							// System.out.println("il nodo è un elemento non span");
 							verse.appendText(((Element) node).ownText());
 						}
 					}
 					else
 					{
-						String t = ((TextNode) node).text();
-//						System.out.println("il nodo non è un elemento (" + t + ")");
-						verse.appendText(t);
-//						System.out.println(verse.getText());
+						String t = ((TextNode) node).text().trim();
+						// System.out.println("il nodo non è un elemento (" + t + ")");
+						if(t != "" && t.length() != 1)
+						{
+//							System.out.println("[" + t + "]");
+							verse.appendText(t);
+						}
+						// System.out.println(verse.getText());
 					}
 				}
 			}
-			verse.appendText(((TextNode) node).text());
+			if(node instanceof Element)
+			{
+				verse.appendText(((Element) node).ownText());
+			}
+			else
+			{
+				verse.appendText(((TextNode) node).text());
+			}
+			// System.out.println(verse.getNumber() + ", " + verse.getText());
 		}
 	}
 
