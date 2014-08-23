@@ -1,6 +1,10 @@
 package bible;
 
 import java.io.FileNotFoundException;
+import com.steadystate.css.parser.CSSOMParser;
+
+import org.w3c.css.sac.InputSource;
+import org.w3c.dom.css.CSSStyleDeclaration;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,6 +86,7 @@ public class Book
 			{
 				inChapter = inChapter.substring(5);
 				Iterator<Element> parIter;
+				System.out.println(doc.head().getElementsByTag("link").attr("href"));
 				parIter = doc.body().getElementsByTag("p").iterator();
 				if(parIter.hasNext())
 				{
@@ -166,6 +171,19 @@ public class Book
 				e.printStackTrace();
 			}
 			Document doc = Jsoup.parse(text);
+	    CSSOMParser parser = new CSSOMParser();
+	    try
+			{
+				System.out.println(doc.head().getElementsByTag("link").attr("href"));
+				CSSStyleDeclaration o = parser.parseStyleDeclaration(new InputSource(new FileReader(doc.head().getElementsByTag("link").attr("href"))));
+				System.out.println(o.getPropertyCSSValue("vertical-align"));
+			}
+			catch(IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 			addChapter(doc);
 		}
 	}
