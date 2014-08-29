@@ -1,6 +1,7 @@
 package bible;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.jsoup.nodes.Document;
@@ -26,13 +27,11 @@ public class Chapter
 		setNumber(Integer.parseInt(n));
 	}
 
-	public Chapter(Document d)
+	public Chapter(Document d, HashSet<String> verseMarkers, int number)
 	{
 		verses = new ArrayList<Verse>();
-		String title = d.title();
-		if(title.startsWith("Cap."))
 		{
-			setNumber(title.substring(5));
+			setNumber(number);
 			Iterator<Element> parIter;
 			parIter = d.body().getElementsByTag("p").iterator();
 			int vNumb = 0;
@@ -42,29 +41,17 @@ public class Chapter
 			{
 				Element para = parIter.next();
 				Iterator<Node> nodes = para.childNodes().iterator();
-//				System.out.println(para.html());
-				boolean isFirstNode = true;
-				boolean skipNextVerse = false;
 				while(nodes.hasNext())
 				{
 					node = nodes.next();
-					System.out.println("nodo [" + node.toString() + "]");
+//					System.out.println("nodo [" + node.toString() + "]");
 					if(node instanceof Element)
 					{
-						// System.out.println("il nodo è un elemento");
 						if(((Element) node).tagName() == "span")
 						{
-							// System.out.println("il nodo è uno span");
-							if(isFirstNode)
+							if(verseMarkers.contains("*." + node.attr("class")))
 							{
-								// System.out.println("il nodo è il primo nodo");
-								isFirstNode = false;
-								verseSpanClass = node.attr("class");
-							}
-							if(node.attr("class").equals(verseSpanClass))
-							{
-								// System.out.println("il nodo è di tipo vNumb, creo un verso");
-								// System.out.println(((Element) node).ownText());
+//								System.out.println("Lo span ha classe *." + node.attr("class"));
 								try
 								{
 									vNumb = Integer.parseInt(((Element) node).ownText());
@@ -72,7 +59,6 @@ public class Chapter
 								catch(java.lang.NumberFormatException e)
 								{
 									vNumb = 1;
-									skipNextVerse = true;
 								}
 								if(verse != null)
 								{
@@ -83,20 +69,21 @@ public class Chapter
 							else
 							{
 								// System.out.println("il nodo non è di tipo vNumb");
+								if(((Element) node).ownText() != null && verse != null)
 								verse.appendText(((Element) node).ownText());
 							}
 						}
 						else
 						{
 							// System.out.println("il nodo è un elemento non span");
-							verse.appendText(((Element) node).ownText());
+							if(verse != null) verse.appendText(((Element) node).ownText());
 						}
 					}
 					else
 					{
 						String t = ((TextNode) node).text().trim();
 						// System.out.println("il nodo non è un elemento (" + t + ")");
-						if(t != "" && t.length() != 1)
+						if(t != "" && t.length() != 1 && verse != null)
 						{
 //							System.out.println("[" + t + "]");
 							verse.appendText(t);
@@ -107,11 +94,11 @@ public class Chapter
 			}
 			if(node instanceof Element)
 			{
-				verse.appendText(((Element) node).ownText());
+				if(verse != null) verse.appendText(((Element) node).ownText());
 			}
 			else
 			{
-				verse.appendText(((TextNode) node).text());
+				if(verse != null) verse.appendText(((TextNode) node).text());
 			}
 			// System.out.println(verse.getNumber() + ", " + verse.getText());
 		}

@@ -2,17 +2,25 @@ package bible;
 
 import java.io.FileNotFoundException;
 import com.steadystate.css.parser.CSSOMParser;
+import com.sun.corba.se.pept.transport.InboundConnectionCache;
 
 import org.w3c.css.sac.InputSource;
+import org.w3c.dom.css.CSSRule;
+import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import org.w3c.dom.css.CSSStyleRule;
+import org.w3c.dom.css.CSSStyleSheet;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.SpineReference;
@@ -27,7 +35,7 @@ public class Book
 	private ArrayList<Chapter> chapters;
 	private String title;
 	private Properties libriMap;
-	private String verseSpanClass;
+	private String fileName;
 
 	public Book()
 	{
@@ -36,81 +44,16 @@ public class Book
 		try
 		{
 			libriMap.load(new FileReader("libri.map"));
-		} catch(FileNotFoundException e1)
+		}
+		catch(FileNotFoundException e1)
 		{
 			e1.printStackTrace();
-		} catch(IOException e1)
+		}
+		catch(IOException e1)
 		{
 			e1.printStackTrace();
 		}
 		chapters = new ArrayList<Chapter>();
-	}
-
-	public void testLoad(String u)
-	{
-		EpubReader er = new EpubReader();
-		Iterator<SpineReference> ir = null;
-		try
-		{
-			URL url = new URL(u);
-			InputStream in = url.openStream();
-			nl.siegmann.epublib.domain.Book inBook = er.readEpub(in);
-			in.close();
-			setTitle(libriMap.getProperty(inBook.getTitle()));
-			ir = inBook.getSpine().getSpineReferences().iterator();
-		} catch(MalformedURLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch(IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		while(ir.hasNext())
-		{
-			Resource res = ir.next().getResource();
-			System.err.println(res.getHref());
-			String text = null;
-			try
-			{
-				text = new String(res.getData());
-			} catch(IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			Document doc = Jsoup.parse(text);
-			String inChapter = doc.title();
-			if(inChapter.startsWith("Cap."))
-			{
-				inChapter = inChapter.substring(5);
-				Iterator<Element> parIter;
-				System.out.println(doc.head().getElementsByTag("link").attr("href"));
-				parIter = doc.body().getElementsByTag("p").iterator();
-				if(parIter.hasNext())
-				{
-					Element para = parIter.next();
-					Iterator<Element> children = para.children().listIterator();
-					if(children.hasNext())
-					{
-						Element child = children.next();
-
-						if(child.hasAttr("class"))
-						{
-							verseSpanClass = child.attr("class");
-						}
-						System.err.println(verseSpanClass);
-					}
-					// while(children.hasNext())
-					// {
-					// Element child = children.next();
-					// verseSpanClass = child.attr("class");
-					// System.err.println(++count + ": " + child.nodeName());
-					// }
-				}
-			}
-		}
 	}
 
 	public void setTitle(String t)
@@ -128,63 +71,138 @@ public class Book
 		chapters.add(c);
 	}
 
-	public void addChapter(Document d)
+	public void addChapter(Document d, HashSet<String> verseMarkers, int number)
 	{
-		chapters.add(new Chapter(d));
+		chapters.add(new Chapter(d, verseMarkers, number));
 	}
-	
+
 	public Iterator<Chapter> getChapters()
 	{
 		return chapters.iterator();
+	}
+
+	public HashSet<String> getVerseMarkers()
+	{
+		CSSOMParser parser;
+		FileReader fr;
+		InputSource is;
+		CSSStyleSheet css;
+		CSSRuleList cssRules;
+		CSSRule rule;
+		CSSStyleRule styleRule;
+		HashSet<String> verseMarkers = null;
+		String selector, property, value;
+
+		try
+		{
+			String cssPath = "epub/" + getBaseName() + "/OEBPS/Styles/style.css";
+
+/*
+ * crea un parser CSS e si predispone a scorrere il CSS di questo libro alla
+ * ricerca di classi con font-size plausibili come numeri di versetto, e a
+ * metterle via in contenitore
+ */
+
+			parser = new CSSOMParser();
+			fr = new FileReader(cssPath);
+			is = new InputSource(fr);
+			css = parser.parseStyleSheet(is, null, null);
+			cssRules = css.getCssRules();
+			verseMarkers = new HashSet<String>();
+
+/*
+ * ora che ha la lista di tutte le regole del CSS, le scorre esaminando solo
+ * quelle che iniziano con "*.t" e che hanno font-size=.65em
+ */
+
+			for(int i = 0; i < cssRules.getLength(); i++)
+			{
+				rule = cssRules.item(i);
+				if(rule instanceof CSSStyleRule)
+				{
+					styleRule = (CSSStyleRule) rule;
+					selector = styleRule.getSelectorText();
+					if(selector.startsWith("*.t"))
+					{
+						// System.out.println("selector:" + i + ": " + selector);
+						CSSStyleDeclaration styleDeclaration = styleRule.getStyle();
+
+						for(int j = 0; j < styleDeclaration.getLength(); j++)
+						{
+							property = styleDeclaration.item(j);
+							value = styleDeclaration.getPropertyCSSValue(property)
+									.getCssText();
+							if(property.equals("font-size") && value.equals("0.65em"))
+							{
+								verseMarkers.add(selector);
+							}
+						}
+					}
+				}
+			}
+		}
+		catch(IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return verseMarkers;
 	}
 
 	public void load(String u)
 	{
 		EpubReader er = new EpubReader();
 		Iterator<SpineReference> ir = null;
+		nl.siegmann.epublib.domain.Book inBook = null;
 		try
 		{
 			URL url = new URL(u);
+			String qString = url.getFile();
+			String fileName = qString.replaceAll(".*/", "");
+			setBaseName(fileName.split("\\.")[0]);
 			InputStream in = url.openStream();
-			nl.siegmann.epublib.domain.Book inBook = er.readEpub(in);
+			inBook = er.readEpub(in);
 			in.close();
 			System.err.println(inBook.getTitle());
 			setTitle(libriMap.getProperty(inBook.getTitle()));
 			ir = inBook.getSpine().getSpineReferences().iterator();
-		} catch(MalformedURLException e)
-		{
-			e.printStackTrace();
-		} catch(IOException e)
+		}
+		catch(MalformedURLException e)
 		{
 			e.printStackTrace();
 		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		int chaps = -3;
 		while(ir.hasNext())
 		{
 			Resource res = ir.next().getResource();
-//			System.err.println(res.getHref());
 			String text = null;
-			try
+			if(++chaps > 0)
 			{
-				text = new String(res.getData());
-			} catch(IOException e)
-			{
-				e.printStackTrace();
+				try
+				{
+					text = new String(res.getData());
+				}
+				catch(IOException e)
+				{
+					e.printStackTrace();
+				}
+				Document doc = Jsoup.parse(text);
+				addChapter(doc, getVerseMarkers(), chaps);
 			}
-			Document doc = Jsoup.parse(text);
-	    CSSOMParser parser = new CSSOMParser();
-	    try
-			{
-				System.out.println(doc.head().getElementsByTag("link").attr("href"));
-				CSSStyleDeclaration o = parser.parseStyleDeclaration(new InputSource(new FileReader(doc.head().getElementsByTag("link").attr("href"))));
-				System.out.println(o.getPropertyCSSValue("vertical-align"));
-			}
-			catch(IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			addChapter(doc);
 		}
+	}
+
+	public String getBaseName()
+	{
+		return fileName;
+	}
+
+	public void setBaseName(String fileName)
+	{
+		this.fileName = fileName;
 	}
 }

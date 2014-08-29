@@ -17,13 +17,13 @@ public class Test
 		int count = 0;
 		while(titles.ready())
 		{
-			System.out.println(++count);
 			title = titles.readLine();
 			if(! title.startsWith("#"))
 			{
 				System.out.println("titolo in lista: " + baseUrl + title + ".epub");
 				bible.Book book = new bible.Book();
 				book.load(baseUrl + title + ".epub");
+				
 				System.out.println(title);
 				Iterator<Chapter> chaps = book.getChapters();
 				while(chaps.hasNext())
