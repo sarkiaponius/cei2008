@@ -47,10 +47,6 @@ public class Book
 	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
 	private nl.siegmann.epublib.domain.Book epub = null;
 	private String swordAcronym;
-	public Logger log;
-	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
-	private nl.siegmann.epublib.domain.Book epub = null;
-	private String swordAcronym;
 
 	public Book()
 	{
