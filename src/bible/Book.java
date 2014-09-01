@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import nl.siegmann.epublib.domain.Resource;
+import nl.siegmann.epublib.domain.Resources;
 import nl.siegmann.epublib.domain.SpineReference;
 import nl.siegmann.epublib.epub.EpubReader;
 
@@ -36,6 +37,8 @@ public class Book
 	private String title;
 	private Properties libriMap;
 	private String fileName;
+	private nl.siegmann.epublib.domain.Book epub = null;
+	private String swordAcronym;
 
 	public Book()
 	{
@@ -92,10 +95,12 @@ public class Book
 		CSSStyleRule styleRule;
 		HashSet<String> verseMarkers = null;
 		String selector, property, value;
+		Resources res;
 
 		try
 		{
-			String cssPath = "epub/" + getBaseName() + "/OEBPS/Styles/style.css";
+			res = epub.getResources();
+			res.getByHref("Styles/style.css").getReader();
 
 /*
  * crea un parser CSS e si predispone a scorrere il CSS di questo libro alla
@@ -104,8 +109,7 @@ public class Book
  */
 
 			parser = new CSSOMParser();
-			fr = new FileReader(cssPath);
-			is = new InputSource(fr);
+			is = new InputSource(res.getByHref("Styles/style.css").getReader());
 			css = parser.parseStyleSheet(is, null, null);
 			cssRules = css.getCssRules();
 			verseMarkers = new HashSet<String>();
@@ -124,7 +128,6 @@ public class Book
 					selector = styleRule.getSelectorText();
 					if(selector.startsWith("*.t"))
 					{
-						// System.out.println("selector:" + i + ": " + selector);
 						CSSStyleDeclaration styleDeclaration = styleRule.getStyle();
 
 						for(int j = 0; j < styleDeclaration.getLength(); j++)
@@ -153,7 +156,6 @@ public class Book
 	{
 		EpubReader er = new EpubReader();
 		Iterator<SpineReference> ir = null;
-		nl.siegmann.epublib.domain.Book inBook = null;
 		try
 		{
 			URL url = new URL(u);
@@ -161,11 +163,11 @@ public class Book
 			String fileName = qString.replaceAll(".*/", "");
 			setBaseName(fileName.split("\\.")[0]);
 			InputStream in = url.openStream();
-			inBook = er.readEpub(in);
+			epub = er.readEpub(in);
 			in.close();
-			System.err.println(inBook.getTitle());
-			setTitle(libriMap.getProperty(inBook.getTitle()));
-			ir = inBook.getSpine().getSpineReferences().iterator();
+			System.err.println(epub.getTitle());
+			setTitle(libriMap.getProperty(getBaseName()));
+			ir = epub.getSpine().getSpineReferences().iterator();
 		}
 		catch(MalformedURLException e)
 		{
@@ -173,7 +175,7 @@ public class Book
 		}
 		catch(IOException e)
 		{
-			e.printStackTrace();
+			System.err.println("Problema di I/O: " + e.getMessage());
 		}
 		int chaps = -3;
 		while(ir.hasNext())
@@ -205,4 +207,22 @@ public class Book
 	{
 		this.fileName = fileName;
 	}
+	
+	public String toImp()
+	{
+		String imp = "";
+		Iterator<Chapter> citer = getChapters();
+		Chapter chap;
+		while(citer.hasNext())
+		{
+			chap = citer.next();
+			imp += chap.toImp(swordAcronym);
+		}
+		return imp;
+	}
+
+	public void setAcronym(String key)
+  {
+	  swordAcronym = key;
+  }
 }

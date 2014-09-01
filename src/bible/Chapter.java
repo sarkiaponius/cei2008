@@ -14,6 +14,17 @@ public class Chapter
 	private ArrayList<Verse> verses;
 	private int number;
 	private String verseSpanClass;
+	private String swordAcronym;
+
+	public String getSwordAcronym()
+	{
+		return swordAcronym;
+	}
+
+	public void setSwordAcronym(String swordAcronym)
+	{
+		this.swordAcronym = swordAcronym;
+	}
 
 	public Chapter(int n)
 	{
@@ -65,12 +76,17 @@ public class Chapter
 									addVerse(verse);
 								}
 								verse = new Verse(vNumb);
+//								verse.setChapterNumber(number);
+//								verse.setSwordAcronym(swordAcronym);
 							}
 							else
 							{
 								// System.out.println("il nodo non è di tipo vNumb");
 								if(((Element) node).ownText() != null && verse != null)
 								verse.appendText(((Element) node).ownText());
+//								verse.setSwordAcronym(swordAcronym);
+//								verse.setChapterNumber(number);
+								
 							}
 						}
 						else
@@ -137,5 +153,16 @@ public class Chapter
 	public Iterator<Verse> getVerses()
 	{
 		return verses.iterator();
+	}
+	
+	public String toImp(String swordAcronym)
+	{
+		Iterator<Verse> viter = verses.iterator();
+		String imp = "";
+		while(viter.hasNext())
+		{
+			imp += viter.next().toImp(swordAcronym, number);
+		}
+		return imp;
 	}
 }
