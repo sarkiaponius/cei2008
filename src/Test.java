@@ -39,7 +39,6 @@ public class Test
 						stanza += v.getNumber() + "\n";
 						stanza += v.getText();
 						System.out.println(stanza);
-						// System.out.println(v.getText());
 					}
 				}
 			}
