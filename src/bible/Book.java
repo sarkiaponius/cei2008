@@ -11,9 +11,11 @@ import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,6 +28,10 @@ import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.SpineReference;
 import nl.siegmann.epublib.epub.EpubReader;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -36,6 +42,8 @@ public class Book
 	private String title;
 	private Properties libriMap;
 	private String fileName;
+	public Logger log;
+	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
 
 	public Book()
 	{
@@ -54,6 +62,23 @@ public class Book
 			e1.printStackTrace();
 		}
 		chapters = new ArrayList<Chapter>();
+	}
+
+	// inizializza il logger
+
+	private void initLogger() throws FileNotFoundException
+	{
+		// logger generico
+		log = Logger.getLogger("COMPARC");
+		log.setLevel(Level.INFO);
+		PatternLayout pl = new PatternLayout(logLayout);
+		File lf = new File("log");
+		PrintWriter pw = new PrintWriter(lf);
+		WriterAppender wa = new WriterAppender(pl, pw);
+		log.addAppender(wa);
+		wa = new WriterAppender(pl, System.out);
+		log.addAppender(wa);
+		// BasicConfigurator.configure(wa);
 	}
 
 	public void setTitle(String t)
