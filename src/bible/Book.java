@@ -1,17 +1,7 @@
 package bible;
 
-import java.io.FileNotFoundException;
-import com.steadystate.css.parser.CSSOMParser;
-import com.sun.corba.se.pept.transport.InboundConnectionCache;
-
-import org.w3c.css.sac.InputSource;
-import org.w3c.dom.css.CSSRule;
-import org.w3c.dom.css.CSSRuleList;
-import org.w3c.dom.css.CSSStyleDeclaration;
-import org.w3c.dom.css.CSSStyleRule;
-import org.w3c.dom.css.CSSStyleSheet;
-
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Set;
 
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.Resources;
@@ -35,7 +24,14 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.w3c.css.sac.InputSource;
+import org.w3c.dom.css.CSSRule;
+import org.w3c.dom.css.CSSRuleList;
+import org.w3c.dom.css.CSSStyleDeclaration;
+import org.w3c.dom.css.CSSStyleRule;
+import org.w3c.dom.css.CSSStyleSheet;
+
+import com.steadystate.css.parser.CSSOMParser;
 
 public class Book
 {
@@ -55,6 +51,7 @@ public class Book
 		try
 		{
 			libriMap.load(new FileReader("libri.map"));
+			initLogger();
 		}
 		catch(FileNotFoundException e1)
 		{
@@ -112,7 +109,6 @@ public class Book
 	public HashSet<String> getVerseMarkers()
 	{
 		CSSOMParser parser;
-		FileReader fr;
 		InputSource is;
 		CSSStyleSheet css;
 		CSSRuleList cssRules;

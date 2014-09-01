@@ -55,6 +55,7 @@ public class Bible
 			book.setAcronym(key);
 			String url = ceiBaseUrl + swordMap.getProperty(key) + ".epub"; 
 			book.load(url);
+			books.add(book);
 			System.err.println(book.toImp());
 		}		
 	}
