@@ -43,17 +43,14 @@ public class Book
 	private String title;
 	private Properties libriMap;
 	private String fileName;
-<<<<<<< HEAD
 	public Logger log;
 	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
 	private nl.siegmann.epublib.domain.Book epub = null;
 	private String swordAcronym;
-=======
 	public Logger log;
 	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
 	private nl.siegmann.epublib.domain.Book epub = null;
 	private String swordAcronym;
->>>>>>> 8255a4c9d7380283d1045d621c3f76ee5e856e67
 
 	public Book()
 	{
