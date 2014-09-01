@@ -14,7 +14,6 @@ public class Test
 		BufferedReader titles = new BufferedReader(new FileReader("url.map"));
 		String title = null;
 		String baseUrl = "http://www.verbumweb.net/it/bibbia/";
-		int count = 0;
 		while(titles.ready())
 		{
 			title = titles.readLine();

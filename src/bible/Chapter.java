@@ -13,7 +13,6 @@ public class Chapter
 {
 	private ArrayList<Verse> verses;
 	private int number;
-	private String verseSpanClass;
 	private String swordAcronym;
 
 	public String getSwordAcronym()
