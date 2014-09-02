@@ -231,7 +231,7 @@ public class Book
 	
 	public String toImp()
 	{
-		String imp = "";
+		String imp = "$$$" + swordAcronym + " 0:0\n\n";
 		Iterator<Chapter> citer = getChapters();
 		Chapter chap;
 		while(citer.hasNext())

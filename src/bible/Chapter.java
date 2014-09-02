@@ -157,7 +157,7 @@ public class Chapter
 	public String toImp(String swordAcronym)
 	{
 		Iterator<Verse> viter = verses.iterator();
-		String imp = "";
+		String imp = "$$$" + swordAcronym + " " + number + ":0\n";
 		while(viter.hasNext())
 		{
 			imp += viter.next().toImp(swordAcronym, number);

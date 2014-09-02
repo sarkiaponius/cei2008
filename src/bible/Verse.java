@@ -66,6 +66,6 @@ public class Verse
 	
 	public String toImp(String swordAcronym, int chapter)
 	{
-		return "$$$" + swordAcronym + "." + chapter + "." + number + "\n" + text + "\n";
+		return "$$$" + swordAcronym + " " + chapter + ":" + number + "\n" + text + "\n";
 	}
 }

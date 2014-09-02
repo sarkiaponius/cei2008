@@ -18,45 +18,44 @@ public class Bible
 	{
 		config = new Properties();
 		try
-    {
-	    config.load(new FileReader("bible.conf"));
-    }
-    catch(FileNotFoundException e)
-    {
-	    e.printStackTrace();
-    }
-    catch(IOException e)
-    {
-	    e.printStackTrace();
-    }
+		{
+			config.load(new FileReader("bible.conf"));
+		} catch(FileNotFoundException e)
+		{
+			e.printStackTrace();
+		} catch(IOException e)
+		{
+			e.printStackTrace();
+		}
 		swordMap = new Properties();
 		try
-    {
-	    swordMap.load(new FileReader(config.getProperty("sword.map")));
-    }
-    catch(FileNotFoundException e)
-    {
-	    e.printStackTrace();
-    }
-    catch(IOException e)
-    {
-	    e.printStackTrace();
-    }
+		{
+			swordMap.load(new FileReader(config.getProperty("sword.map")));
+		} catch(FileNotFoundException e)
+		{
+			e.printStackTrace();
+		} catch(IOException e)
+		{
+			e.printStackTrace();
+		}
 		ceiBaseUrl = config.getProperty("cei.baseurl");
+		books = new ArrayList<Book>();
 	}
-	
+
 	public void load()
 	{
-		Enumeration<Object> keys = swordMap.keys(); 
+		Enumeration<Object> keys = swordMap.keys();
+		System.err.println("$$$[ Module Heading ]\n");
+		System.err.println("$$$[ Testament 1 Heading ]\n");
 		while(keys.hasMoreElements())
 		{
 			String key = (String) keys.nextElement();
 			Book book = new Book();
 			book.setAcronym(key);
-			String url = ceiBaseUrl + swordMap.getProperty(key) + ".epub"; 
+			String url = ceiBaseUrl + swordMap.getProperty(key) + ".epub";
 			book.load(url);
 			books.add(book);
 			System.err.println(book.toImp());
-		}		
+		}
 	}
 }
