@@ -9,5 +9,6 @@ public class TestBible
 	{
 		Bible bible = new Bible();
 		bible.load();
+		System.err.println(bible.toImp());
 	}
 }
