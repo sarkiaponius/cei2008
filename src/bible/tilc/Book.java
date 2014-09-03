@@ -1,14 +1,13 @@
 package bible.tilc;
 
 import java.io.BufferedReader;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,11 +15,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
-import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.Resources;
-import nl.siegmann.epublib.domain.SpineReference;
-import nl.siegmann.epublib.epub.EpubReader;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -55,10 +50,12 @@ public class Book
 		{
 			libriMap.load(new FileReader("libri.map"));
 			initLogger();
-		} catch(FileNotFoundException e1)
+		}
+		catch(FileNotFoundException e1)
 		{
 			e1.printStackTrace();
-		} catch(IOException e1)
+		}
+		catch(IOException e1)
 		{
 			e1.printStackTrace();
 		}
@@ -97,9 +94,9 @@ public class Book
 		chapters.add(c);
 	}
 
-	public void addChapter(Document d, HashSet<String> verseMarkers, int number)
+	public void addChapter(Document d, int number)
 	{
-		chapters.add(new Chapter(d, verseMarkers, number));
+		chapters.add(new Chapter(d, number));
 	}
 
 	public Iterator<Chapter> getChapters()
@@ -156,7 +153,7 @@ public class Book
 						{
 							property = styleDeclaration.item(j);
 							value = styleDeclaration.getPropertyCSSValue(property)
-							    .getCssText();
+									.getCssText();
 							if(property.equals("font-size") && value.equals("0.65em"))
 							{
 								verseMarkers.add(selector);
@@ -165,7 +162,8 @@ public class Book
 					}
 				}
 			}
-		} catch(IOException e)
+		}
+		catch(IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -175,48 +173,67 @@ public class Book
 
 	public void load(String u)
 	{
-		Iterator<SpineReference> ir = null;
-		int chapNumber = 0;
+		int chapCount = 0;
 		URL url = null;
 		BufferedReader br = null;
 		InputStreamReader isr = null;
-		String line, chapText;
+		String line;
 		Chapter chapter = null;
-		do
+		try
 		{
-			chapText = "";
+			url = new URL(u);
+			isr = new InputStreamReader(url.openStream(), "ISO-8859-1");
+			br = new BufferedReader(isr);
+			while(br.ready())
+			{
+				line = br.readLine();
+				if(line.contains("Leggi questo Capitolo"))
+				{
+					chapCount++;
+				}
+			}
+		}
+		catch(MalformedURLException e)
+		{
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			System.err.println("Problema di I/O: " + e.getMessage());
+		}
+		for(int i = 1; i <= chapCount; i++)
+		{
 			try
 			{
-				chapter = new Chapter(chapNumber++);
-				url = new URL(u + "&capitolo=" + chapNumber);
-				isr = new InputStreamReader(url.openStream());
-				if(isr.ready())
+				chapter = new Chapter(i);
+				url = new URL(u + "&capl=" + i);
+				isr = new InputStreamReader(url.openStream(), "ISO-8859-1");
+				br = new BufferedReader(isr);
+				int verseNumber = 0;
+				while(br.ready())
 				{
-					br = new BufferedReader(isr);
-					int verseNumber = 0;
-					while(br.ready())
+					line = br.readLine().trim();
+					if(line.startsWith("<sup><i>"))
 					{
-						line = br.readLine();
-						if(line.startsWith("<sup><a class=\"numversetto\""))
-						{
-							line = line.replaceAll("<sup><a class=\"numversetto\".*</sup></font>",
-							    "");
-							line = line.replaceAll("<sup><a class=\"numversetto\".*</sup>", "");
-							chapter.addVerse(line, verseNumber++);
-							System.err.println("[" + verseNumber + "]" + line);
-						}
+						line = line.replaceAll("<sup><i>[-0-9]+</i></sup> *", "");
+						line = line.replaceAll("<br><br>.*<br>", "");
+						line = line.replaceAll("(<br>)+$", "");
+						line = line.replaceAll("(<br>)+", "\n");
+						chapter.addVerse(line, verseNumber++);
 					}
-					addChapter(chapter);
-				} else
-					continue;
-			} catch(MalformedURLException e)
+				}
+			}
+			catch(MalformedURLException e)
 			{
 				e.printStackTrace();
-			} catch(IOException e)
+			}
+			catch(IOException e)
 			{
 				System.err.println("Problema di I/O: " + e.getMessage());
 			}
-		} while(true);
+			addChapter(chapter);
+//			System.err.println(chapter.toImp(swordAcronym));
+		}
 	}
 
 	public String getBaseName()

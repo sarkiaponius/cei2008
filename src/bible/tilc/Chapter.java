@@ -39,85 +39,18 @@ public class Chapter
 		setNumber(Integer.parseInt(n));
 	}
 
-	public Chapter(Document d, HashSet<String> verseMarkers, int number)
+	public Chapter(Document d, int number)
 	{
 		verses = new ArrayList<Verse>();
 		{
 			setNumber(number);
-			Iterator<Element> parIter;
-			parIter = d.body().getElementsByTag("p").iterator();
-			int vNumb = 0;
-			Verse verse = null;
-			Node node = null;
+			Iterator<TextNode> parIter;
+			parIter = d.body().textNodes().iterator();
 			while(parIter.hasNext())
 			{
-				Element para = parIter.next();
-				Iterator<Node> nodes = para.childNodes().iterator();
-				while(nodes.hasNext())
-				{
-					node = nodes.next();
-//					System.out.println("nodo [" + node.toString() + "]");
-					if(node instanceof Element)
-					{
-						if(((Element) node).tagName() == "span")
-						{
-							if(verseMarkers.contains("*." + node.attr("class")))
-							{
-//								System.out.println("Lo span ha classe *." + node.attr("class"));
-								try
-								{
-									vNumb = Integer.parseInt(((Element) node).ownText());
-								}
-								catch(java.lang.NumberFormatException e)
-								{
-									vNumb = 1;
-								}
-								if(verse != null)
-								{
-									addVerse(verse);
-								}
-								verse = new Verse(vNumb);
-//								verse.setChapterNumber(number);
-//								verse.setSwordAcronym(swordAcronym);
-							}
-							else
-							{
-								// System.out.println("il nodo non è di tipo vNumb");
-								if(((Element) node).ownText() != null && verse != null)
-								verse.appendText(((Element) node).ownText());
-//								verse.setSwordAcronym(swordAcronym);
-//								verse.setChapterNumber(number);
-								
-							}
-						}
-						else
-						{
-							// System.out.println("il nodo è un elemento non span");
-							if(verse != null) verse.appendText(((Element) node).ownText());
-						}
-					}
-					else
-					{
-						String t = ((TextNode) node).text().trim();
-						// System.out.println("il nodo non è un elemento (" + t + ")");
-						if(t != "" && t.length() != 1 && verse != null)
-						{
-//							System.out.println("[" + t + "]");
-							verse.appendText(t);
-						}
-						// System.out.println(verse.getText());
-					}
-				}
+				TextNode para = parIter.next();
+				System.err.println(para.text());
 			}
-			if(node instanceof Element)
-			{
-				if(verse != null) verse.appendText(((Element) node).ownText());
-			}
-			else
-			{
-				if(verse != null) verse.appendText(((TextNode) node).text());
-			}
-			// System.out.println(verse.getNumber() + ", " + verse.getText());
 		}
 	}
 
@@ -155,7 +88,7 @@ public class Chapter
 	{
 		return verses.iterator();
 	}
-	
+
 	public String toImp(String swordAcronym)
 	{
 		Iterator<Verse> viter = verses.iterator();

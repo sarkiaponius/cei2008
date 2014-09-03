@@ -17,6 +17,8 @@ public class Bible
 	private Properties swordMap;
 	private Properties config;
 	private String baseUrl;
+	private String paraLibro;
+	private String paraCapitolo;
 
 	public Bible()
 	{
@@ -47,6 +49,8 @@ public class Bible
 			e.printStackTrace();
 		}
 		baseUrl = config.getProperty("tilc.baseurl");
+		paraLibro = config.getProperty("tilc.para.libro");
+		paraCapitolo = config.getProperty("tilc.para.capitolo");
 		ot = new ArrayList<Book>();
 		nt = new ArrayList<Book>();
 	}
@@ -56,6 +60,7 @@ public class Bible
 		BufferedReader br;
 		String acronym, url;
 		Book book = null;
+		int bookNum = 0;
 		try
 		{
 			br = new BufferedReader(new FileReader(config.getProperty("sword.ot")));
@@ -64,7 +69,8 @@ public class Bible
 				acronym = br.readLine();
 				book = new Book();
 				book.setAcronym(acronym);
-				url = baseUrl + "libro=" + swordMap.getProperty(acronym);
+				System.err.println(acronym);
+				url = baseUrl + paraLibro + "=" + ++bookNum;
 				book.load(url);
 				ot.add(book);
 			}
