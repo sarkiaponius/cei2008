@@ -1,11 +1,14 @@
-package bible;
+package bible.tilc;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -52,12 +55,10 @@ public class Book
 		{
 			libriMap.load(new FileReader("libri.map"));
 			initLogger();
-		}
-		catch(FileNotFoundException e1)
+		} catch(FileNotFoundException e1)
 		{
 			e1.printStackTrace();
-		}
-		catch(IOException e1)
+		} catch(IOException e1)
 		{
 			e1.printStackTrace();
 		}
@@ -123,11 +124,11 @@ public class Book
 			res = epub.getResources();
 			res.getByHref("Styles/style.css").getReader();
 
-/*
- * crea un parser CSS e si predispone a scorrere il CSS di questo libro alla
- * ricerca di classi con font-size plausibili come numeri di versetto, e a
- * metterle via in contenitore
- */
+			/*
+			 * crea un parser CSS e si predispone a scorrere il CSS di questo libro
+			 * alla ricerca di classi con font-size plausibili come numeri di
+			 * versetto, e a metterle via in contenitore
+			 */
 
 			parser = new CSSOMParser();
 			is = new InputSource(res.getByHref("Styles/style.css").getReader());
@@ -135,10 +136,10 @@ public class Book
 			cssRules = css.getCssRules();
 			verseMarkers = new HashSet<String>();
 
-/*
- * ora che ha la lista di tutte le regole del CSS, le scorre esaminando solo
- * quelle che iniziano con "*.t" e che hanno font-size=.65em
- */
+			/*
+			 * ora che ha la lista di tutte le regole del CSS, le scorre esaminando
+			 * solo quelle che iniziano con "*.t" e che hanno font-size=.65em
+			 */
 
 			for(int i = 0; i < cssRules.getLength(); i++)
 			{
@@ -155,7 +156,7 @@ public class Book
 						{
 							property = styleDeclaration.item(j);
 							value = styleDeclaration.getPropertyCSSValue(property)
-									.getCssText();
+							    .getCssText();
 							if(property.equals("font-size") && value.equals("0.65em"))
 							{
 								verseMarkers.add(selector);
@@ -164,8 +165,7 @@ public class Book
 					}
 				}
 			}
-		}
-		catch(IOException e)
+		} catch(IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -175,47 +175,48 @@ public class Book
 
 	public void load(String u)
 	{
-		EpubReader er = new EpubReader();
 		Iterator<SpineReference> ir = null;
-		try
+		int chapNumber = 0;
+		URL url = null;
+		BufferedReader br = null;
+		InputStreamReader isr = null;
+		String line, chapText;
+		Chapter chapter = null;
+		do
 		{
-			URL url = new URL(u);
-			String qString = url.getFile();
-			String fileName = qString.replaceAll(".*/", "");
-			setBaseName(fileName.split("\\.")[0]);
-			InputStream in = url.openStream();
-			epub = er.readEpub(in);
-			in.close();
-			setTitle(libriMap.getProperty(getBaseName()));
-			ir = epub.getSpine().getSpineReferences().iterator();
-		}
-		catch(MalformedURLException e)
-		{
-			e.printStackTrace();
-		}
-		catch(IOException e)
-		{
-			System.err.println("Problema di I/O: " + e.getMessage());
-		}
-		int chaps = -3;
-		while(ir.hasNext())
-		{
-			Resource res = ir.next().getResource();
-			String text = null;
-			if(++chaps > 0)
+			chapText = "";
+			try
 			{
-				try
+				chapter = new Chapter(chapNumber++);
+				url = new URL(u + "&capitolo=" + chapNumber);
+				isr = new InputStreamReader(url.openStream());
+				if(isr.ready())
 				{
-					text = new String(res.getData());
-				}
-				catch(IOException e)
-				{
-					e.printStackTrace();
-				}
-				Document doc = Jsoup.parse(text);
-				addChapter(doc, getVerseMarkers(), chaps);
+					br = new BufferedReader(isr);
+					int verseNumber = 0;
+					while(br.ready())
+					{
+						line = br.readLine();
+						if(line.startsWith("<sup><a class=\"numversetto\""))
+						{
+							line = line.replaceAll("<sup><a class=\"numversetto\".*</sup></font>",
+							    "");
+							line = line.replaceAll("<sup><a class=\"numversetto\".*</sup>", "");
+							chapter.addVerse(line, verseNumber++);
+							System.err.println("[" + verseNumber + "]" + line);
+						}
+					}
+					addChapter(chapter);
+				} else
+					continue;
+			} catch(MalformedURLException e)
+			{
+				e.printStackTrace();
+			} catch(IOException e)
+			{
+				System.err.println("Problema di I/O: " + e.getMessage());
 			}
-		}
+		} while(true);
 	}
 
 	public String getBaseName()
@@ -227,7 +228,7 @@ public class Book
 	{
 		this.fileName = fileName;
 	}
-	
+
 	public String toImp()
 	{
 		String imp = "$$$" + swordAcronym + " 0:0\n\n";
@@ -242,7 +243,7 @@ public class Book
 	}
 
 	public void setAcronym(String key)
-  {
-	  swordAcronym = key;
-  }
+	{
+		swordAcronym = key;
+	}
 }
