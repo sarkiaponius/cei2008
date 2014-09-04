@@ -60,31 +60,40 @@ public class Bible
 		BufferedReader br;
 		String acronym, url;
 		Book book = null;
-		int bookNum = 0;
 		try
 		{
 			br = new BufferedReader(new FileReader(config.getProperty("sword.ot")));
 			while(br.ready())
 			{
 				acronym = br.readLine();
-				book = new Book();
-				book.setAcronym(acronym);
-				System.err.println(acronym);
-				url = baseUrl + paraLibro + "=" + ++bookNum;
-				book.load(url);
-				ot.add(book);
+				if(!acronym.startsWith("#"))
+				{
+					book = new Book();
+					book.setAcronym(acronym);
+					book.setParaCapitolo(paraCapitolo);
+					System.err.println(acronym);
+					url = baseUrl + paraLibro + "=" + swordMap.getProperty(acronym);
+					System.err.println(url);
+					book.load(url);
+					ot.add(book);
+				}
 			}
 			br = new BufferedReader(new FileReader(config.getProperty("sword.nt")));
 			while(br.ready())
 			{
 				acronym = br.readLine();
-				book = new Book();
-				book.setAcronym(acronym);
-				System.err.println(acronym);
-				url = baseUrl + "libro=" + swordMap.getProperty(acronym);
-				book.load(url);
-				nt.add(book);
-				wait(2);
+				if(!acronym.startsWith("#"))
+				{
+					book = new Book();
+					book.setAcronym(acronym);
+					book.setParaCapitolo(paraCapitolo);
+					System.err.println(acronym);
+					url = baseUrl + paraLibro + "=" + swordMap.getProperty(acronym);
+					System.err.println(url);
+					book.load(url);
+					nt.add(book);
+					wait(2);
+				}
 			}
 		}
 		catch(FileNotFoundException e)
@@ -99,8 +108,8 @@ public class Bible
 
 	public String toImp()
 	{
-		String imp = "$$$[ Module Heading ]\n";
-		imp += "$$$[ Testament 1 Heading ]\n";
+		String imp = "$$$[ Module Heading ]\n\n";
+		imp += "$$$[ Testament 1 Heading ]\n\n";
 		Iterator<Book> ir;
 		ir = ot.iterator();
 		while(ir.hasNext())

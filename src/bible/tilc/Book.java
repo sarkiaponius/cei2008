@@ -1,7 +1,6 @@
 package bible.tilc;
 
 import java.io.BufferedReader;
-import java.io.CharConversionException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -10,17 +9,18 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
 import nl.siegmann.epublib.domain.Resources;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRule;
@@ -40,7 +40,8 @@ public class Book
 	public Logger log;
 	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
 	private nl.siegmann.epublib.domain.Book epub = null;
-	private String swordAcronym;
+	private String swordAcronym, htmlRegex;
+	private String paraCapitolo;
 
 	public Book()
 	{
@@ -60,6 +61,7 @@ public class Book
 			e1.printStackTrace();
 		}
 		chapters = new ArrayList<Chapter>();
+		htmlRegex = "<sup>.*</sup>(</font>)*";
 	}
 
 	// inizializza il logger
@@ -173,55 +175,48 @@ public class Book
 
 	public void load(String u)
 	{
-		int chapCount = 0;
 		URL url = null;
+		URLConnection uconn = null;
 		BufferedReader br = null;
 		InputStreamReader isr = null;
-		String line;
+		String line = null;
 		Chapter chapter = null;
-		try
-		{
-			url = new URL(u);
-			isr = new InputStreamReader(url.openStream(), "ISO-8859-1");
-			br = new BufferedReader(isr);
-			while(br.ready())
-			{
-				line = br.readLine();
-				if(line.contains("Leggi questo Capitolo"))
-				{
-					chapCount++;
-				}
-			}
-		}
-		catch(MalformedURLException e)
-		{
-			e.printStackTrace();
-		}
-		catch(IOException e)
-		{
-			System.err.println("Problema di I/O: " + e.getMessage());
-		}
-		for(int i = 1; i <= chapCount; i++)
+		int lines = 0, i = 0;
+		do
 		{
 			try
 			{
-				chapter = new Chapter(i);
-				url = new URL(u + "&capl=" + i);
-				isr = new InputStreamReader(url.openStream(), "ISO-8859-1");
+				chapter = new Chapter(++i);
+				url = new URL(u + "&" + paraCapitolo + "=" + i);
+				uconn = url.openConnection();
+				System.err.println(url);
+//				isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
+				isr = new InputStreamReader(uconn.getInputStream());
 				br = new BufferedReader(isr);
 				int verseNumber = 0;
+				lines = 0;
 				while(br.ready())
 				{
 					line = br.readLine().trim();
-					if(line.startsWith("<sup><i>"))
+					lines++;
+					// System.err.println(line);
+					if(line.startsWith("<sup><a"))
 					{
-						line = line.replaceAll("<sup><i>[-0-9]+</i></sup> *", "");
-						line = line.replaceAll("<br><br>.*<br>", "");
-						line = line.replaceAll("(<br>)+$", "");
-						line = line.replaceAll("(<br>)+", "\n");
-						chapter.addVerse(line, verseNumber++);
+						line = line.replaceAll(htmlRegex, "");
+						line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>", "");
+						line = line.replaceAll("<br><dd> *<br><dd>$", "");
+						line = line.replaceAll("<br><dd>$", "");
+						line = line.replaceAll("<br><dd>", "\n");
+						chapter.addVerse(line.trim(), ++verseNumber);
 					}
+					if(line.endsWith("<br><dd><br><dd>$"))
+						break;
+					if(line.contains("Attenzione"))
+						break;
 				}
+				br.close();
+				if(line.contains("Attenzione"))
+					break;
 			}
 			catch(MalformedURLException e)
 			{
@@ -231,9 +226,11 @@ public class Book
 			{
 				System.err.println("Problema di I/O: " + e.getMessage());
 			}
+			System.err.println(lines);
 			addChapter(chapter);
-//			System.err.println(chapter.toImp(swordAcronym));
+			// wait(1);
 		}
+		while(!line.contains("Attenzione"));
 	}
 
 	public String getBaseName()
@@ -262,5 +259,22 @@ public class Book
 	public void setAcronym(String key)
 	{
 		swordAcronym = key;
+	}
+
+	public void setParaCapitolo(String pc)
+	{
+		paraCapitolo = pc;
+	}
+
+	private void wait(int seconds)
+	{
+		try
+		{
+			Thread.sleep(1000 * seconds);
+		}
+		catch(InterruptedException ex)
+		{
+			Thread.currentThread().interrupt();
+		}
 	}
 }
