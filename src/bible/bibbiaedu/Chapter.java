@@ -1,4 +1,4 @@
-package bible.tilc;
+package bible.bibbiaedu;
 
 import java.util.ArrayList;
 import java.util.Iterator;

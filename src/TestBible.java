@@ -9,6 +9,7 @@ public class TestBible
 	{
 		Bible bible = new Bible();
 		bible.load();
-		System.err.println(bible.toImp());
+//		System.err.println(bible.toImp());
+		bible.toImp("cei2008.imp");
 	}
 }

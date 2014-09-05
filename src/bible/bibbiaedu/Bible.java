@@ -1,14 +1,15 @@
-package bible.tilc;
+package bible.bibbiaedu;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
-import bible.tilc.Book;
+import bible.bibbiaedu.Book;
 
 public class Bible
 {
@@ -125,6 +126,13 @@ public class Bible
 		return imp;
 	}
 
+	public void toImp(String file) throws FileNotFoundException
+	{
+		PrintWriter pw = new PrintWriter(file);
+		pw.println(toImp());
+		pw.close();
+	}
+	
 	private void wait(int seconds)
 	{
 		try

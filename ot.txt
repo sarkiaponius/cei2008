@@ -1,4 +1,4 @@
-#Gen
+Gen
 #Exod
 #Lev
 #Num
@@ -28,12 +28,12 @@
 #Hos
 #Joel
 #Amos
-Obad
+#Obad
 #Jonah
 #Mic
 #Nah
 #Hab
-Zeph
+#Zeph
 #Hag
 #Zech
-Mal
+#Mal

@@ -1,6 +1,6 @@
 import java.io.IOException;
 
-import bible.tilc.Bible;
+import bible.bibbiaedu.Bible;
 
 public class TestTilcBible
 {
@@ -9,6 +9,6 @@ public class TestTilcBible
 	{
 		Bible bible = new Bible();
 		bible.load();
-		System.err.println(bible.toImp());
+		bible.toImp("cei2008.imp");
 	}
 }

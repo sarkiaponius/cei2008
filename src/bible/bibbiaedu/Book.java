@@ -1,4 +1,4 @@
-package bible.tilc;
+package bible.bibbiaedu;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -190,8 +190,8 @@ public class Book
 				url = new URL(u + "&" + paraCapitolo + "=" + i);
 				uconn = url.openConnection();
 				System.err.println(url);
-//				isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
-				isr = new InputStreamReader(uconn.getInputStream());
+				isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
+//				isr = new InputStreamReader(uconn.getInputStream());
 				br = new BufferedReader(isr);
 				int verseNumber = 0;
 				lines = 0;
@@ -205,6 +205,7 @@ public class Book
 						line = line.replaceAll(htmlRegex, "");
 						line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>", "");
 						line = line.replaceAll("<br><dd> *<br><dd>$", "");
+						line = line.replaceAll("<br><dd> *<br><dd>", "\n");
 						line = line.replaceAll("<br><dd>$", "");
 						line = line.replaceAll("<br><dd>", "\n");
 						chapter.addVerse(line.trim(), ++verseNumber);
