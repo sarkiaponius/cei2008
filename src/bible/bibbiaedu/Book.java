@@ -50,7 +50,6 @@ public class Book
 		try
 		{
 			libriMap.load(new FileReader("libri.map"));
-			initLogger();
 		}
 		catch(FileNotFoundException e1)
 		{
@@ -62,25 +61,11 @@ public class Book
 		}
 		chapters = new ArrayList<Chapter>();
 		htmlRegex = "<sup>.*</sup>(</font>)*";
+		log = Logger.getLogger("COMPARC");
+		log.setLevel(Level.INFO);
 	}
 
 	// inizializza il logger
-
-	private void initLogger() throws FileNotFoundException
-	{
-		// logger generico
-		log = Logger.getLogger("COMPARC");
-		log.setLevel(Level.INFO);
-		PatternLayout pl = new PatternLayout(logLayout);
-		File lf = new File("log");
-		PrintWriter pw = new PrintWriter(lf);
-		WriterAppender wa = new WriterAppender(pl, pw);
-		log.addAppender(wa);
-		wa = new WriterAppender(pl, System.out);
-		log.addAppender(wa);
-		// BasicConfigurator.configure(wa);
-	}
-
 	public void setTitle(String t)
 	{
 		title = new String(t);
@@ -189,7 +174,8 @@ public class Book
 				chapter = new Chapter(++i);
 				url = new URL(u + "&" + paraCapitolo + "=" + i);
 				uconn = url.openConnection();
-				System.err.println(url);
+				uconn.getConnectTimeout();
+				log.info(u + "&" + paraCapitolo + "=" + i);
 				isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
 //				isr = new InputStreamReader(uconn.getInputStream());
 				br = new BufferedReader(isr);
@@ -197,7 +183,10 @@ public class Book
 				lines = 0;
 				while(br.ready())
 				{
-					line = br.readLine().trim();
+					line = br.readLine();
+					log.info("Elaboro capitolo " + i + "(" + line.trim());
+					log.debug(line);
+					line = line.trim();
 					lines++;
 					// System.err.println(line);
 					if(line.startsWith("<sup><a"))
@@ -227,7 +216,7 @@ public class Book
 			{
 				System.err.println("Problema di I/O: " + e.getMessage());
 			}
-			System.err.println(lines);
+			log.info(lines);
 			addChapter(chapter);
 			// wait(1);
 		}

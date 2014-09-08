@@ -1,6 +1,7 @@
 package bible.bibbiaedu;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,6 +9,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 
 import bible.bibbiaedu.Book;
 
@@ -20,6 +26,24 @@ public class Bible
 	private String baseUrl;
 	private String paraLibro;
 	private String paraCapitolo;
+	public Logger log;
+	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
+
+
+	private void initLogger() throws FileNotFoundException
+	{
+		// logger generico
+		log = Logger.getLogger("COMPARC");
+		log.setLevel(Level.INFO);
+		PatternLayout pl = new PatternLayout(logLayout);
+		File lf = new File("log");
+		PrintWriter pw = new PrintWriter(lf);
+		WriterAppender wa = new WriterAppender(pl, pw);
+		log.addAppender(wa);
+//		wa = new WriterAppender(pl, System.out);
+//		log.addAppender(wa);
+		// BasicConfigurator.configure(wa);
+	}
 
 	public Bible()
 	{
@@ -27,6 +51,7 @@ public class Bible
 		try
 		{
 			config.load(new FileReader("bible.conf"));
+			initLogger();
 		}
 		catch(FileNotFoundException e)
 		{
@@ -54,6 +79,7 @@ public class Bible
 		paraCapitolo = config.getProperty("tilc.para.capitolo");
 		ot = new ArrayList<Book>();
 		nt = new ArrayList<Book>();
+
 	}
 
 	public void load()
