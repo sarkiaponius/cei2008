@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -14,6 +15,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
+
+import osis.DivCT;
+import osis.ObjectFactory;
+import osis.OsisCT;
+import osis.OsisTextCT;
 
 import bible.bibbiaedu.Book;
 
@@ -150,6 +156,32 @@ public class Bible
 			imp += ir.next().toImp();
 		}
 		return imp;
+	}
+
+	public OsisCT toOsis()
+	{
+		osis.ObjectFactory objF = new ObjectFactory();
+		OsisCT osisCT = objF.createOsisCT();
+		OsisTextCT osisText = objF.createOsisTextCT();
+		osisCT.setOsisText(osisText);
+		DivCT testament = objF.createDivCT();
+		testament.setType("x-testament");
+		osisText.getDiv().add(testament);
+		Iterator<Book> ir;
+		ir = ot.iterator();
+		while(ir.hasNext())
+		{
+			testament.getContent().addAll(ir.next().toOsis().getContent());
+		}
+		testament = new DivCT();
+		testament.setType("x-testament");
+		osisText.getDiv().add(testament);
+		ir = nt.iterator();
+		while(ir.hasNext())
+		{
+			testament.getContent().addAll(ir.next().toOsis().getContent());
+		}
+		return osisCT;
 	}
 
 	public void toImp(String file) throws FileNotFoundException

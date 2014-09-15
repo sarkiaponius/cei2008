@@ -1,5 +1,7 @@
 package bible;
 
+import osis.VerseCT;
+
 public class Verse
 {
 	private String text;
@@ -62,6 +64,14 @@ public class Verse
 	public void clean()
 	{
 		text = text.replaceAll("«", "\"");
+	}
+	
+	public VerseCT toOsis(String swordAcronym, int chapter)
+	{
+		VerseCT vct = new VerseCT();
+		vct.getOsisID().add(swordAcronym + "." + chapter + "." + number);
+		vct.getContent().add(text);
+		return vct;
 	}
 	
 	public String toImp(String swordAcronym, int chapter)

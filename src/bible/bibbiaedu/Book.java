@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -28,6 +29,8 @@ import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
+
+import osis.DivCT;
 
 import com.steadystate.css.parser.CSSOMParser;
 
@@ -62,7 +65,7 @@ public class Book
 		chapters = new ArrayList<Chapter>();
 		htmlRegex = "<sup>.*</sup>(</font>)*";
 		log = Logger.getLogger("COMPARC");
-		log.setLevel(Level.INFO);
+		log.setLevel(Level.WARN);
 	}
 
 	// inizializza il logger
@@ -244,6 +247,21 @@ public class Book
 			imp += chap.toImp(swordAcronym);
 		}
 		return imp;
+	}
+
+	public DivCT toOsis()
+	{
+		String imp = "$$$" + swordAcronym + " 0:0\n\n";
+		Iterator<Chapter> citer = getChapters();
+		Chapter chap;
+		DivCT divct = new DivCT();
+		divct.setType("book");
+		while(citer.hasNext())
+		{
+			chap = citer.next();
+			divct.getContent().addAll(chap.toOsis(swordAcronym).getContent());
+		}
+		return divct;
 	}
 
 	public void setAcronym(String key)

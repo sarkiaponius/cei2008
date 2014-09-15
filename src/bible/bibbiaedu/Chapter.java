@@ -1,10 +1,14 @@
 package bible.bibbiaedu;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
+
+import osis.ChapterCT;
+import osis.VerseCT;
 
 import bible.Verse;
 
@@ -95,5 +99,19 @@ public class Chapter
 			imp += viter.next().toImp(swordAcronym, number);
 		}
 		return imp;
+	}
+
+	public ChapterCT toOsis(String swordAcronym)
+	{
+		Iterator<Verse> viter = verses.iterator();
+		ChapterCT cct = new ChapterCT();
+		cct.getOsisID().add(swordAcronym + "." + number);
+		VerseCT vct;
+		while(viter.hasNext())
+		{
+			vct = viter.next().toOsis(swordAcronym, number);
+			cct.getContent().addAll(vct.getContent());
+		}
+		return cct;
 	}
 }
