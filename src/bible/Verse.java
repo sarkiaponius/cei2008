@@ -1,6 +1,10 @@
 package bible;
 
+import javax.xml.bind.JAXBElement;
+
+import osis.ObjectFactory;
 import osis.VerseCT;
+import org.jdom2.Element;
 
 public class Verse
 {
@@ -66,12 +70,12 @@ public class Verse
 		text = text.replaceAll("«", "\"");
 	}
 	
-	public VerseCT toOsis(String swordAcronym, int chapter)
+	public Element toOsis(String swordAcronym, int chapter)
 	{
-		VerseCT vct = new VerseCT();
-		vct.getOsisID().add(swordAcronym + "." + chapter + "." + number);
-		vct.getContent().add(text);
-		return vct;
+		Element verse = new Element("verse");
+		verse.setAttribute("osisID", swordAcronym + "." + chapter + "." + number);
+		verse.setText(text);
+		return verse;
 	}
 	
 	public String toImp(String swordAcronym, int chapter)

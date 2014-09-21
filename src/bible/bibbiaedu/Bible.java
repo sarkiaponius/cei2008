@@ -11,10 +11,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
+import org.jdom2.Document;
+import org.jdom2.Element;
 
 import osis.DivCT;
 import osis.ObjectFactory;
@@ -158,30 +162,34 @@ public class Bible
 		return imp;
 	}
 
-	public OsisCT toOsis()
+	public Document toOsis()
 	{
-		osis.ObjectFactory objF = new ObjectFactory();
-		OsisCT osisCT = objF.createOsisCT();
-		OsisTextCT osisText = objF.createOsisTextCT();
-		osisCT.setOsisText(osisText);
-		DivCT testament = objF.createDivCT();
-		testament.setType("x-testament");
-		osisText.getDiv().add(testament);
 		Iterator<Book> ir;
 		ir = ot.iterator();
+		Document doc = new Document();
+		Element osis = new Element("osis");
+		doc.setRootElement(osis);
+		Element osisText = new Element("osisText");
+		osisText.setAttribute("osisIDWork", "Cei2008");
+		osis.addContent(osisText);
+		Element testament = new Element("div");
+		testament.setAttribute("type", "x-testament");
+		osisText.addContent(testament);		
 		while(ir.hasNext())
 		{
-			testament.getContent().addAll(ir.next().toOsis().getContent());
+			Element book = ir.next().toOsis();
+			testament.addContent(book);
 		}
-		testament = new DivCT();
-		testament.setType("x-testament");
-		osisText.getDiv().add(testament);
+		testament = new Element("div");
+		testament.setAttribute("type", "x-testament");
+		osisText.addContent(testament);		
 		ir = nt.iterator();
 		while(ir.hasNext())
 		{
-			testament.getContent().addAll(ir.next().toOsis().getContent());
+			Element book = ir.next().toOsis();
+			testament.addContent(book);
 		}
-		return osisCT;
+		return doc;
 	}
 
 	public void toImp(String file) throws FileNotFoundException

@@ -16,12 +16,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBElement;
+
 import nl.siegmann.epublib.domain.Resources;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
+import org.jdom2.Element;
 import org.jsoup.nodes.Document;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRule;
@@ -31,6 +34,7 @@ import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
 
 import osis.DivCT;
+import osis.ObjectFactory;
 
 import com.steadystate.css.parser.CSSOMParser;
 
@@ -249,19 +253,19 @@ public class Book
 		return imp;
 	}
 
-	public DivCT toOsis()
+	public Element toOsis()
 	{
-		String imp = "$$$" + swordAcronym + " 0:0\n\n";
 		Iterator<Chapter> citer = getChapters();
 		Chapter chap;
-		DivCT divct = new DivCT();
-		divct.setType("book");
+		Element book = new Element("div");
+		book.setAttribute("type", "book");
+		book.setAttribute("osisID", swordAcronym);
 		while(citer.hasNext())
 		{
 			chap = citer.next();
-			divct.getContent().addAll(chap.toOsis(swordAcronym).getContent());
+			book.addContent(chap.toOsis(swordAcronym));
 		}
-		return divct;
+		return book;
 	}
 
 	public void setAcronym(String key)

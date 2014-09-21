@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.jdom2.Element;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 
 import osis.ChapterCT;
+import osis.ObjectFactory;
 import osis.VerseCT;
 
 import bible.Verse;
@@ -101,17 +103,16 @@ public class Chapter
 		return imp;
 	}
 
-	public ChapterCT toOsis(String swordAcronym)
+	public Element toOsis(String swordAcronym)
 	{
-		Iterator<Verse> viter = verses.iterator();
-		ChapterCT cct = new ChapterCT();
-		cct.getOsisID().add(swordAcronym + "." + number);
-		VerseCT vct;
+		Element chapter = new Element("chapter");
+		chapter.setAttribute("osisID", swordAcronym + "." + number);
+		Iterator<Verse> viter = getVerses();
 		while(viter.hasNext())
 		{
-			vct = viter.next().toOsis(swordAcronym, number);
-			cct.getContent().addAll(vct.getContent());
+			Element verse = viter.next().toOsis(swordAcronym, number);
+			chapter.addContent(verse);
 		}
-		return cct;
+		return chapter;
 	}
 }
