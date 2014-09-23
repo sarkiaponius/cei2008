@@ -1,13 +1,17 @@
 package bible.bibbiaedu;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -147,7 +151,7 @@ public class Book
 						{
 							property = styleDeclaration.item(j);
 							value = styleDeclaration.getPropertyCSSValue(property)
-									.getCssText();
+							    .getCssText();
 							if(property.equals("font-size") && value.equals("0.65em"))
 							{
 								verseMarkers.add(selector);
@@ -172,6 +176,7 @@ public class Book
 		BufferedReader br = null;
 		InputStreamReader isr = null;
 		String line = null;
+		String page = null;
 		Chapter chapter = null;
 		int lines = 0, i = 0;
 		do
@@ -183,37 +188,65 @@ public class Book
 				uconn = url.openConnection();
 				uconn.getConnectTimeout();
 				log.info(u + "&" + paraCapitolo + "=" + i);
-				isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
-//				isr = new InputStreamReader(uconn.getInputStream());
-				br = new BufferedReader(isr);
+				// isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
+				// isr = new InputStreamReader(uconn.getInputStream());
+				// br = new BufferedReader(isr);
 				int verseNumber = 0;
 				lines = 0;
-				while(br.ready())
+				InputStream is = null;
+				ByteArrayOutputStream os = null;
+				try
 				{
-					line = br.readLine();
-					log.info("Elaboro capitolo " + i + "(" + line.trim());
-					log.debug(line);
-					line = line.trim();
-					lines++;
-					// System.err.println(line);
-					if(line.startsWith("<sup><a"))
+					byte[] chunk = new byte[4096];
+					int bytesRead;
+					is = uconn.getInputStream();
+					os = new ByteArrayOutputStream();
+					while((bytesRead = is.read(chunk)) > 0)
 					{
-						line = line.replaceAll(htmlRegex, "");
-						line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>", "");
-						line = line.replaceAll("<br><dd> *<br><dd>$", "");
-						line = line.replaceAll("<br><dd> *<br><dd>", "\n");
-						line = line.replaceAll("<br><dd>$", "");
-						line = line.replaceAll("<br><dd>", "\n");
-						chapter.addVerse(line.trim(), ++verseNumber);
+						os.write(chunk, 0, bytesRead);
 					}
-					if(line.endsWith("<br><dd><br><dd>$"))
-						break;
-					if(line.contains("Attenzione"))
-						break;
 				}
-				br.close();
-				if(line.contains("Attenzione"))
-					break;
+				catch(IOException e)
+				{
+					e.printStackTrace();
+				}
+				finally
+				{
+					is.close();
+				}
+				page = os.toString();
+				br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray()) , "ISO-8859-1"));
+				log.info(page);
+				if(! page.contains("Attenzione! La"))
+				{
+					while(br.ready())
+					{
+						line = br.readLine();
+						if(line != null)
+						{
+							log.warn("Elaboro capitolo " + i + "(" + line.trim());
+							line = line.trim();
+							lines++;
+							if(line.startsWith("<sup><a"))
+							{
+								line = line.replaceAll(htmlRegex, "");
+								line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>",
+								    "");
+								line = line.replaceAll("<br><dd> *<br><dd>$", "");
+								line = line.replaceAll("<br><dd> *<br><dd>", "\n");
+								line = line.replaceAll("<br><dd>$", "");
+								line = line.replaceAll("<br><dd>", "\n");
+								chapter.addVerse(line.trim(), ++verseNumber);
+							}
+							if(line.endsWith("<br><dd><br><dd>$")) break;
+						}
+						else
+						{
+							break;
+						}
+					}
+					br.close();
+				}
 			}
 			catch(MalformedURLException e)
 			{
@@ -221,13 +254,12 @@ public class Book
 			}
 			catch(IOException e)
 			{
-				System.err.println("Problema di I/O: " + e.getMessage());
+				log.warn("Problema di I/O: " + e.getMessage());
 			}
-			log.info(lines);
 			addChapter(chapter);
 			// wait(1);
 		}
-		while(!line.contains("Attenzione"));
+		while(! page.contains("Attenzione! La"));
 	}
 
 	public String getBaseName()
