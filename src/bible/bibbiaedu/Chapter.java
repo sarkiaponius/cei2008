@@ -1,16 +1,11 @@
 package bible.bibbiaedu;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.jdom2.Element;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
-
-import osis.ChapterCT;
-import osis.ObjectFactory;
-import osis.VerseCT;
 
 import bible.Verse;
 

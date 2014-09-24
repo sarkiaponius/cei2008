@@ -3,15 +3,11 @@ package bible.bibbiaedu;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -20,14 +16,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.xml.bind.JAXBElement;
-
 import nl.siegmann.epublib.domain.Resources;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
 import org.jdom2.Element;
 import org.jsoup.nodes.Document;
 import org.w3c.css.sac.InputSource;
@@ -37,9 +28,6 @@ import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
 
-import osis.DivCT;
-import osis.ObjectFactory;
-
 import com.steadystate.css.parser.CSSOMParser;
 
 public class Book
@@ -48,8 +36,7 @@ public class Book
 	private String title;
 	private Properties libriMap;
 	private String fileName;
-	public Logger log;
-	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
+	public static Logger log;
 	private nl.siegmann.epublib.domain.Book epub = null;
 	private String swordAcronym, htmlRegex;
 	private String paraCapitolo;
@@ -73,7 +60,7 @@ public class Book
 		chapters = new ArrayList<Chapter>();
 		htmlRegex = "<sup>.*</sup>(</font>)*";
 		log = Logger.getLogger("COMPARC");
-		log.setLevel(Level.WARN);
+//		log.setLevel(Level.INFO);
 	}
 
 	// inizializza il logger
@@ -174,7 +161,6 @@ public class Book
 		URL url = null;
 		URLConnection uconn = null;
 		BufferedReader br = null;
-		InputStreamReader isr = null;
 		String line = null;
 		String page = null;
 		Chapter chapter = null;
@@ -187,10 +173,7 @@ public class Book
 				url = new URL(u + "&" + paraCapitolo + "=" + i);
 				uconn = url.openConnection();
 				uconn.getConnectTimeout();
-				log.info(u + "&" + paraCapitolo + "=" + i);
-				// isr = new InputStreamReader(uconn.getInputStream(), "ISO-8859-1");
-				// isr = new InputStreamReader(uconn.getInputStream());
-				// br = new BufferedReader(isr);
+				log.info("Capitolo " + i);
 				int verseNumber = 0;
 				lines = 0;
 				InputStream is = null;
@@ -215,18 +198,19 @@ public class Book
 					is.close();
 				}
 				page = os.toString();
-				br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray()) , "ISO-8859-1"));
-				log.info(page);
-				if(! page.contains("Attenzione! La"))
+				br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(
+				    os.toByteArray()), "ISO-8859-1"));
+				log.debug(page);
+				if(!page.contains("Attenzione! La"))
 				{
 					while(br.ready())
 					{
 						line = br.readLine();
 						if(line != null)
 						{
-							log.warn("Elaboro capitolo " + i + "(" + line.trim());
 							line = line.trim();
 							lines++;
+							log.debug("Riga " + lines + "(" + line.trim() + ")");
 							if(line.startsWith("<sup><a"))
 							{
 								line = line.replaceAll(htmlRegex, "");
@@ -259,7 +243,7 @@ public class Book
 			addChapter(chapter);
 			// wait(1);
 		}
-		while(! page.contains("Attenzione! La"));
+		while(!page.contains("Attenzione! La"));
 	}
 
 	public String getBaseName()
@@ -308,17 +292,5 @@ public class Book
 	public void setParaCapitolo(String pc)
 	{
 		paraCapitolo = pc;
-	}
-
-	private void wait(int seconds)
-	{
-		try
-		{
-			Thread.sleep(1000 * seconds);
-		}
-		catch(InterruptedException ex)
-		{
-			Thread.currentThread().interrupt();
-		}
 	}
 }

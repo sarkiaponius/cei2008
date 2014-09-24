@@ -6,12 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
-
-import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -19,13 +16,6 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
 import org.jdom2.Document;
 import org.jdom2.Element;
-
-import osis.DivCT;
-import osis.ObjectFactory;
-import osis.OsisCT;
-import osis.OsisTextCT;
-
-import bible.bibbiaedu.Book;
 
 public class Bible
 {
@@ -36,9 +26,8 @@ public class Bible
 	private String baseUrl;
 	private String paraLibro;
 	private String paraCapitolo;
-	public Logger log;
+	public static Logger log;
 	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
-
 
 	private void initLogger() throws FileNotFoundException
 	{
@@ -50,8 +39,8 @@ public class Bible
 		PrintWriter pw = new PrintWriter(lf);
 		WriterAppender wa = new WriterAppender(pl, pw);
 		log.addAppender(wa);
-//		wa = new WriterAppender(pl, System.out);
-//		log.addAppender(wa);
+		wa = new WriterAppender(pl, System.out);
+		log.addAppender(wa);
 		// BasicConfigurator.configure(wa);
 	}
 
@@ -108,11 +97,11 @@ public class Bible
 					book = new Book();
 					book.setAcronym(acronym);
 					book.setParaCapitolo(paraCapitolo);
-					System.err.println(acronym);
 					url = baseUrl + paraLibro + "=" + swordMap.getProperty(acronym);
-					System.err.println(url);
+					log.info("Libro " + acronym + " (" + url + ")");
 					book.load(url);
 					ot.add(book);
+					wait(2);
 				}
 			}
 			br = new BufferedReader(new FileReader(config.getProperty("sword.nt")));
@@ -124,12 +113,10 @@ public class Bible
 					book = new Book();
 					book.setAcronym(acronym);
 					book.setParaCapitolo(paraCapitolo);
-					System.err.println(acronym);
 					url = baseUrl + paraLibro + "=" + swordMap.getProperty(acronym);
-					System.err.println(url);
+					log.info("Libro " + acronym + " (" + url + ")");
 					book.load(url);
 					nt.add(book);
-					wait(2);
 				}
 			}
 		}
@@ -174,7 +161,7 @@ public class Bible
 		osis.addContent(osisText);
 		Element testament = new Element("div");
 		testament.setAttribute("type", "x-testament");
-		osisText.addContent(testament);		
+		osisText.addContent(testament);
 		while(ir.hasNext())
 		{
 			Element book = ir.next().toOsis();
@@ -182,7 +169,7 @@ public class Bible
 		}
 		testament = new Element("div");
 		testament.setAttribute("type", "x-testament");
-		osisText.addContent(testament);		
+		osisText.addContent(testament);
 		ir = nt.iterator();
 		while(ir.hasNext())
 		{
@@ -198,7 +185,7 @@ public class Bible
 		pw.println(toImp());
 		pw.close();
 	}
-	
+
 	private void wait(int seconds)
 	{
 		try
