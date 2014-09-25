@@ -35,6 +35,7 @@ public class Book
 	private ArrayList<Chapter> chapters;
 	private String title;
 	private Properties libriMap;
+	private Properties doppiMap;
 	private String fileName;
 	public static Logger log;
 	private nl.siegmann.epublib.domain.Book epub = null;
@@ -45,9 +46,11 @@ public class Book
 	{
 		super();
 		libriMap = new Properties();
+		doppiMap = new Properties();
 		try
 		{
 			libriMap.load(new FileReader("libri.map"));
+			doppiMap.load(new FileReader("doppi.map"));
 		}
 		catch(FileNotFoundException e1)
 		{
@@ -60,7 +63,7 @@ public class Book
 		chapters = new ArrayList<Chapter>();
 		htmlRegex = "<sup>.*</sup>(</font>)*";
 		log = Logger.getLogger("COMPARC");
-//		log.setLevel(Level.INFO);
+		// log.setLevel(Level.INFO);
 	}
 
 	// inizializza il logger
@@ -163,6 +166,7 @@ public class Book
 		BufferedReader br = null;
 		String line = null;
 		String page = null;
+		String temp = null;
 		Chapter chapter = null;
 		int lines = 0, i = 0;
 		do
@@ -175,6 +179,7 @@ public class Book
 				uconn.getConnectTimeout();
 				log.info("Capitolo " + i);
 				int verseNumber = 0;
+				boolean removeFirst = false;
 				lines = 0;
 				InputStream is = null;
 				ByteArrayOutputStream os = null;
@@ -213,6 +218,7 @@ public class Book
 							log.debug("Riga " + lines + "(" + line.trim() + ")");
 							if(line.startsWith("<sup><a"))
 							{
+								temp = "";
 								line = line.replaceAll(htmlRegex, "");
 								line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>",
 								    "");
@@ -220,7 +226,32 @@ public class Book
 								line = line.replaceAll("<br><dd> *<br><dd>", "\n");
 								line = line.replaceAll("<br><dd>$", "");
 								line = line.replaceAll("<br><dd>", "\n");
-								chapter.addVerse(line.trim(), ++verseNumber);
+								String osisID = swordAcronym;
+								osisID += "." + i;
+								osisID += "." + ++verseNumber;
+								log.info("Versetto " + osisID);
+								if(doppiMap.getProperty(osisID) == "0")
+								{
+									temp = line.trim();
+									removeFirst = false;
+								}
+								else if(doppiMap.getProperty(osisID) == "1")
+								{
+									temp = line.trim().substring(1);
+									removeFirst = true;
+								}
+								else
+								{
+									if(removeFirst)
+									{
+										chapter.addVerse(temp + line.trim().substring(1), verseNumber);
+									}
+									else
+									{
+										chapter.addVerse(temp + line.trim(), verseNumber);
+									}
+									temp = "";
+								}
 							}
 							if(line.endsWith("<br><dd><br><dd>$")) break;
 						}
