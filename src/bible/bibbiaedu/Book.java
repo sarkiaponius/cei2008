@@ -3,6 +3,8 @@ package bible.bibbiaedu;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -159,7 +161,7 @@ public class Book
 		return verseMarkers;
 	}
 
-	public void load(String u)
+	public void load(String bookDir, String acronym)
 	{
 		URL url = null;
 		URLConnection uconn = null;
@@ -169,99 +171,75 @@ public class Book
 		String temp = null;
 		Chapter chapter = null;
 		int lines = 0, i = 0;
-		do
+		int numFiles = new File(bookDir).list().length;
+		for(int j = 1; j < numFiles; j++)
 		{
+			String chapFile = bookDir + "/" + acronym + "." + j;
 			try
 			{
 				chapter = new Chapter(++i);
-				url = new URL(u + "&" + paraCapitolo + "=" + i);
-				uconn = url.openConnection();
-				uconn.getConnectTimeout();
 				log.info("Capitolo " + i);
 				int verseNumber = 0;
 				boolean removeFirst = false;
 				lines = 0;
 				InputStream is = null;
-				ByteArrayOutputStream os = null;
-				try
-				{
-					byte[] chunk = new byte[4096];
-					int bytesRead;
-					is = uconn.getInputStream();
-					os = new ByteArrayOutputStream();
-					while((bytesRead = is.read(chunk)) > 0)
-					{
-						os.write(chunk, 0, bytesRead);
-					}
-				}
-				catch(IOException e)
-				{
-					e.printStackTrace();
-				}
-				finally
-				{
-					is.close();
-				}
-				page = os.toString();
-				br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(
-				    os.toByteArray()), "ISO-8859-1"));
+				br = new BufferedReader(new InputStreamReader(new FileInputStream(chapFile),
+				    "ISO-8859-1"));
 				log.debug(page);
-				if(!page.contains("Attenzione! La"))
+				while(br.ready())
 				{
-					while(br.ready())
+					line = br.readLine();
+					if(line != null)
 					{
-						line = br.readLine();
-						if(line != null)
+						line = line.trim();
+						lines++;
+						log.debug("Riga " + lines + "(" + line.trim() + ")");
+						if(line.startsWith("<sup><a"))
 						{
-							line = line.trim();
-							lines++;
-							log.debug("Riga " + lines + "(" + line.trim() + ")");
-							if(line.startsWith("<sup><a"))
+							temp = "";
+							line = line.replaceAll(htmlRegex, "");
+							line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>",
+							    "");
+							line = line.replaceAll("<br><dd> *<br><dd>$", "");
+							line = line.replaceAll("<br><dd> *<br><dd>", "\n");
+							line = line.replaceAll("<br><dd>$", "");
+							line = line.replaceAll("<br><dd>", "\n");
+							String osisID = swordAcronym;
+							osisID += "." + i;
+							osisID += "." + ++verseNumber;
+							log.info("Versetto " + osisID);
+							if(doppiMap.getProperty(osisID) == "0")
 							{
-								temp = "";
-								line = line.replaceAll(htmlRegex, "");
-								line = line.replaceAll("<br><dd><br><dd>.*<br><dd></b></font>",
-								    "");
-								line = line.replaceAll("<br><dd> *<br><dd>$", "");
-								line = line.replaceAll("<br><dd> *<br><dd>", "\n");
-								line = line.replaceAll("<br><dd>$", "");
-								line = line.replaceAll("<br><dd>", "\n");
-								String osisID = swordAcronym;
-								osisID += "." + i;
-								osisID += "." + ++verseNumber;
-								log.info("Versetto " + osisID);
-								if(doppiMap.getProperty(osisID) == "0")
+								temp = line.trim();
+								removeFirst = false;
+							}
+							else if(doppiMap.getProperty(osisID) == "1")
+							{
+								temp = line.trim().substring(1);
+								removeFirst = true;
+							}
+							else
+							{
+								if(removeFirst)
 								{
-									temp = line.trim();
-									removeFirst = false;
-								}
-								else if(doppiMap.getProperty(osisID) == "1")
-								{
-									temp = line.trim().substring(1);
-									removeFirst = true;
+									chapter
+									    .addVerse(temp + line.trim().substring(1), verseNumber);
 								}
 								else
 								{
-									if(removeFirst)
-									{
-										chapter.addVerse(temp + line.trim().substring(1), verseNumber);
-									}
-									else
-									{
-										chapter.addVerse(temp + line.trim(), verseNumber);
-									}
-									temp = "";
+									chapter.addVerse(temp + line.trim(), verseNumber);
 								}
+								temp = "";
 							}
-							if(line.endsWith("<br><dd><br><dd>$")) break;
 						}
-						else
-						{
-							break;
-						}
+						if(line.endsWith("<br><dd><br><dd>$")) break;
 					}
-					br.close();
+					else
+					{
+						break;
+					}
 				}
+				br.close();
 			}
 			catch(MalformedURLException e)
 			{
@@ -272,9 +250,7 @@ public class Book
 				log.warn("Problema di I/O: " + e.getMessage());
 			}
 			addChapter(chapter);
-			// wait(1);
 		}
-		while(!page.contains("Attenzione! La"));
 	}
 
 	public String getBaseName()
