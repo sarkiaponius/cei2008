@@ -204,6 +204,8 @@ public class Book
 							line = line.replaceAll("<br><dd> *<br><dd>", "\n");
 							line = line.replaceAll("<br><dd>$", "");
 							line = line.replaceAll("<br><dd>", "\n");
+							line = line.replaceAll("<i>", "");
+							line = line.replaceAll("</i>", "");
 							String osisID = swordAcronym;
 							osisID += "." + i;
 							osisID += "." + ++verseNumber;
