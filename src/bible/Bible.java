@@ -23,12 +23,10 @@ public class Bible
 		try
 		{
 			config.load(new FileReader("bible.conf"));
-		}
-		catch(FileNotFoundException e)
+		} catch(FileNotFoundException e)
 		{
 			e.printStackTrace();
-		}
-		catch(IOException e)
+		} catch(IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -36,12 +34,10 @@ public class Bible
 		try
 		{
 			swordMap.load(new FileReader(config.getProperty("sword.map")));
-		}
-		catch(FileNotFoundException e)
+		} catch(FileNotFoundException e)
 		{
 			e.printStackTrace();
-		}
-		catch(IOException e)
+		} catch(IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -61,30 +57,34 @@ public class Bible
 			while(br.ready())
 			{
 				acronym = br.readLine();
-				book = new Book();
-				book.setAcronym(acronym);
-				url = ceiBaseUrl + swordMap.getProperty(acronym) + ".epub";
-				book.load(url);
-				ot.add(book);
+				if(!acronym.startsWith("#"))
+				{
+					book = new Book();
+					book.setAcronym(acronym);
+					url = ceiBaseUrl + swordMap.getProperty(acronym) + ".epub";
+					book.load(url);
+					ot.add(book);
+				}
 			}
 			br = new BufferedReader(new FileReader(config.getProperty("sword.nt")));
 			while(br.ready())
 			{
 				acronym = br.readLine();
-				book = new Book();
-				book.setAcronym(acronym);
-				System.err.println(acronym);
-				url = ceiBaseUrl + swordMap.getProperty(acronym) + ".epub";
-				book.load(url);
-				nt.add(book);
-				wait(2);
+				if(!acronym.startsWith("#"))
+				{
+					book = new Book();
+					book.setAcronym(acronym);
+					System.err.println(acronym);
+					url = ceiBaseUrl + swordMap.getProperty(acronym) + ".epub";
+					book.load(url);
+					nt.add(book);
+					wait(2);
+				}
 			}
-		}
-		catch(FileNotFoundException e)
+		} catch(FileNotFoundException e)
 		{
 			e.printStackTrace();
-		}
-		catch(IOException e)
+		} catch(IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -115,14 +115,13 @@ public class Bible
 		pw.println(toImp());
 		pw.close();
 	}
-	
+
 	private void wait(int seconds)
 	{
 		try
 		{
 			Thread.sleep(1000 * seconds);
-		}
-		catch(InterruptedException ex)
+		} catch(InterruptedException ex)
 		{
 			Thread.currentThread().interrupt();
 		}
