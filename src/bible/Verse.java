@@ -1,9 +1,5 @@
 package bible;
 
-import javax.xml.bind.JAXBElement;
-
-import osis.ObjectFactory;
-import osis.VerseCT;
 import org.jdom2.Element;
 
 public class Verse

@@ -1,18 +1,13 @@
 package bible.bibbiaedu;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,8 +37,6 @@ public class Book
 	public static Logger log;
 	private nl.siegmann.epublib.domain.Book epub = null;
 	private String swordAcronym, htmlRegex;
-	private String paraCapitolo;
-
 	public Book()
 	{
 		super();
@@ -163,8 +156,6 @@ public class Book
 
 	public void load(String bookDir, String acronym)
 	{
-		URL url = null;
-		URLConnection uconn = null;
 		BufferedReader br = null;
 		String line = null;
 		String page = null;
@@ -182,7 +173,6 @@ public class Book
 				int verseNumber = 0;
 				boolean removeFirst = false;
 				lines = 0;
-				InputStream is = null;
 				br = new BufferedReader(new InputStreamReader(new FileInputStream(chapFile),
 				    "ISO-8859-1"));
 				log.debug(page);
@@ -300,6 +290,5 @@ public class Book
 
 	public void setParaCapitolo(String pc)
 	{
-		paraCapitolo = pc;
 	}
 }

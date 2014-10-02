@@ -27,7 +27,6 @@ public class Bible
 {
 	private ArrayList<Book> ot;
 	private ArrayList<Book> nt;
-	private ArrayList<Book>[] bookArray;
 	private Properties swordMap;
 	private Properties config;
 	private String baseUrl;
@@ -199,18 +198,6 @@ public class Bible
 		PrintWriter pw = new PrintWriter(file);
 		pw.println(toImp());
 		pw.close();
-	}
-
-	private void wait(int seconds)
-	{
-		try
-		{
-			Thread.sleep(1000 * seconds);
-		}
-		catch(InterruptedException ex)
-		{
-			Thread.currentThread().interrupt();
-		}
 	}
 
 	public void download()
