@@ -25,6 +25,7 @@ public class Book
 	private String fileName;
 	public static Logger log;
 	private String swordAcronym, htmlRegex;
+	private boolean notNow;
 	public Book()
 	{
 		super();
@@ -108,8 +109,12 @@ public class Book
 						if(line.contains("<sup>"))
 						{
 							temp = "";
+							if(line.contains("a</sup>"))
+							{
+								notNow = true;
+							}
 							line = line.replaceAll(htmlRegex, "");
-							line = line.replaceAll("^<p.*>", "");
+							line = line.replaceAll("<p.*>", "");
 							line = line.replaceAll("<br>$", "");
 							line = line.replaceAll("<br>", "\n");
 							line = line.replaceAll("<p>", "");
@@ -118,31 +123,42 @@ public class Book
 							line = line.replaceAll("</i>", "");
 							String osisID = swordAcronym;
 							osisID += "." + i;
-							osisID += "." + ++verseNumber;
-							log.info("Versetto " + osisID);
-							if(doppiMap.getProperty(osisID) == "0")
+							if(notNow)
 							{
 								temp = line.trim();
-								removeFirst = false;
-							}
-							else if(doppiMap.getProperty(osisID) == "1")
-							{
-								temp = line.trim().substring(1);
-								removeFirst = true;
+								notNow = false;
 							}
 							else
 							{
-								if(removeFirst)
-								{
-									chapter
-									    .addVerse(temp + line.trim().substring(1), verseNumber);
-								}
-								else
-								{
-									chapter.addVerse(temp + line.trim(), verseNumber);
-								}
-								temp = "";
+								osisID += "." + ++verseNumber;
+								log.info("Versetto " + osisID);
+								chapter.addVerse(temp + line.trim(), verseNumber);
 							}
+//							osisID += "." + ++verseNumber;
+//							log.info("Versetto " + osisID);
+//							if(doppiMap.getProperty(osisID) == "0")
+//							{
+//								temp = line.trim();
+//								removeFirst = false;
+//							}
+//							else if(doppiMap.getProperty(osisID) == "1")
+//							{
+//								temp = line.trim().substring(1);
+//								removeFirst = true;
+//							}
+//							else
+//							{
+//								if(removeFirst)
+//								{
+//									chapter
+//									    .addVerse(temp + line.trim().substring(1), verseNumber);
+//								}
+//								else
+//								{
+//									chapter.addVerse(temp + line.trim(), verseNumber);
+//								}
+//								temp = "";
+//							}
 						}
 						if(line.endsWith("<br><dd><br><dd>$")) break;
 					}
