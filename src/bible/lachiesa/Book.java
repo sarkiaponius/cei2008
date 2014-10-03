@@ -93,7 +93,6 @@ public class Book
 				chapter = new Chapter(++i);
 				log.info("Capitolo " + i);
 				int verseNumber = 0;
-				boolean removeFirst = false;
 				lines = 0;
 				br = new BufferedReader(new InputStreamReader(new FileInputStream(chapFile),
 				    "ISO-8859-1"));
@@ -114,10 +113,11 @@ public class Book
 								notNow = true;
 							}
 							line = line.replaceAll(htmlRegex, "");
-							line = line.replaceAll("<p.*>", "");
-							line = line.replaceAll("<br>$", "");
+							line = line.replaceAll("<p[^>]*>", "\n");
+							line = line.replaceAll("<br>$", "\n");
 							line = line.replaceAll("<br>", "\n");
-							line = line.replaceAll("<p>", "");
+							line = line.replaceAll("^<p>", "");
+							line = line.replaceAll("<p>", "\n");
 							line = line.replaceAll("</p>", "");
 							line = line.replaceAll("<i>", "");
 							line = line.replaceAll("</i>", "");
@@ -134,31 +134,6 @@ public class Book
 								log.info("Versetto " + osisID);
 								chapter.addVerse(temp + line.trim(), verseNumber);
 							}
-//							osisID += "." + ++verseNumber;
-//							log.info("Versetto " + osisID);
-//							if(doppiMap.getProperty(osisID) == "0")
-//							{
-//								temp = line.trim();
-//								removeFirst = false;
-//							}
-//							else if(doppiMap.getProperty(osisID) == "1")
-//							{
-//								temp = line.trim().substring(1);
-//								removeFirst = true;
-//							}
-//							else
-//							{
-//								if(removeFirst)
-//								{
-//									chapter
-//									    .addVerse(temp + line.trim().substring(1), verseNumber);
-//								}
-//								else
-//								{
-//									chapter.addVerse(temp + line.trim(), verseNumber);
-//								}
-//								temp = "";
-//							}
 						}
 						if(line.endsWith("<br><dd><br><dd>$")) break;
 					}
