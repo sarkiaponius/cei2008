@@ -33,6 +33,12 @@ public class Bible
 	private String bibleDir;
 	public static Logger log;
 	private static String logLayout = "%05r %p %C{1}.%M - %m%n";
+	private boolean toDownLoad = false;
+
+	public boolean isToDownLoad()
+	{
+		return toDownLoad;
+	}
 
 	private void initLogger() throws FileNotFoundException
 	{
@@ -84,6 +90,10 @@ public class Bible
 		ot = new ArrayList<Book>();
 		nt = new ArrayList<Book>();
 		bibleDir = config.getProperty("bible.dir");
+		if(config.getProperty("bible.download").equals("true"))
+		{
+			toDownLoad = true;
+		}
 		new File(bibleDir).mkdirs();
 	}
 
@@ -205,9 +215,8 @@ public class Bible
 							new File(bookDir).mkdirs();
 							while(!page.contains("e la ricerca non ha dato risultati"))
 							{
-								String url = baseUrl 
-										+ swordMap.getProperty(acronym) 
-										+ "+" + ++j;
+								String url = baseUrl + swordMap.getProperty(acronym) + "+"
+								    + ++j;
 								URLConnection uconn = new URL(url).openConnection();
 								uconn.getConnectTimeout();
 								log.info("Downloading " + acronym + "." + j);

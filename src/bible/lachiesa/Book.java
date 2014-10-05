@@ -88,6 +88,7 @@ public class Book
 		for(int j = 1; j < numFiles; j++)
 		{
 			String chapFile = bookDir + "/" + acronym + "." + j;
+			String tempVerseRef = "0";
 			try
 			{
 				chapter = new Chapter(++i);
@@ -108,10 +109,21 @@ public class Book
 						if(line.contains("<sup>"))
 						{
 							temp = "";
+							String osisID = swordAcronym;
+							osisID += "." + i;
+							String verseRef = line.replaceAll("^.*<sup>", "");
+							verseRef = verseRef.replaceAll("</sup>.*$", "");
+							log.info("Versetto sorgente: " + verseRef);
 							if(line.contains("a</sup>"))
 							{
+								log.warn(osisID + ", numero versetto anomalo: " + verseRef);
 								notNow = true;
 							}
+							if(tempVerseRef.equals(verseRef))
+							{
+								log.warn(osisID + ", numero versetto duplicato: " + verseRef);
+							}
+							tempVerseRef = new String(verseRef);
 							line = line.replaceAll(htmlRegex, "");
 							line = line.replaceAll("<p[^>]*>", "\n");
 							line = line.replaceAll("<br>$", "\n");
@@ -121,8 +133,6 @@ public class Book
 							line = line.replaceAll("</p>", "");
 							line = line.replaceAll("<i>", "");
 							line = line.replaceAll("</i>", "");
-							String osisID = swordAcronym;
-							osisID += "." + i;
 							if(notNow)
 							{
 								temp = line.trim();
