@@ -28,7 +28,7 @@ public class Chapter
 	{
 		log = Logger.getLogger("COMPARC");
 		htmlRegex = "^.*<sup>.*</sup>";
-		log.info("Creato nuovo capitolo");
+		log.debug("Creato nuovo capitolo");
 	}
 
 	public String getSwordAcronym()
@@ -86,10 +86,10 @@ public class Chapter
 		int index = Integer.parseInt(n);
 		log.debug("Sono in addVerse: verseRef = " + n + ", indice = " + index);
 		int size = verses.size();
-		if(size > 0 && index -1 > size && verses.get(index) != null)
+		if(size > 0 && index - 1 > size && verses.get(index) != null)
 		{
 			String text = verses.get(index).getText();
-			log.debug("Versetto già presente: " + text);
+			log.warn("Versetto già presente. Testo attuale: " + text);
 			verses.remove(index);
 			verses.add(new Verse(text, index));
 		}
@@ -149,15 +149,13 @@ public class Chapter
 		BufferedReader br = null;
 		String line = null;
 		String temp = null;
-		boolean notNow = false;
-		int lines = 0, i = 0;
+		int lines = 0;
 		String tempVerseRef = "0";
 		try
 		{
-			int verseNumber = 0;
 			lines = 0;
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(
-					chapFile), "ISO-8859-1"));
+			    chapFile), "ISO-8859-1"));
 			while(br.ready())
 			{
 				line = br.readLine();
@@ -174,15 +172,30 @@ public class Chapter
 						log.info("Capitolo " + osisID);
 						String verseRef = line.replaceAll("^.*<sup>", "");
 						verseRef = verseRef.replaceAll("</sup>.*$", "");
+
+						/*
+						 * Ci sono una ventina di casi in cui un versetto è stato diviso in
+						 * a e b, e un caso (Job.31.40) in cui i due versetti sono molto
+						 * distanti fra loro. Qui si rimuove la lettera e si mette via un
+						 * versetto col solo numero. Nel caso del versetto b, sarà cura di
+						 * addVerse() aggiungere solo il secondo testo al versetto già
+						 * presente.
+						 */
+
 						if(line.contains("a</sup>") || line.contains("b</sup>"))
 						{
 							log.warn(osisID + ", numero versetto anomalo: " + verseRef);
-							notNow = true;
 							line = line.replaceAll(".</sup>", "</sup>");
 							verseRef = line.replaceAll("^.*<sup>", "");
 							verseRef = verseRef.replaceAll("</sup>.*$", "");
-							log.warn(osisID + ", numero versetto correto in: " + verseRef);
+							log.warn(osisID + ", numero versetto corretto in: " + verseRef);
 						}
+
+						/*
+						 * Questo test rimane per segnalare l'anomalia, comunque gestita
+						 * altrove
+						 */
+
 						if(tempVerseRef.equals(verseRef))
 						{
 							log.warn(osisID + ", numero versetto duplicato: " + verseRef);
@@ -203,12 +216,11 @@ public class Chapter
 						log.info("Versetto " + osisID);
 						if(osisID.contains("Num.26"))
 						{
-//							verseRef = "" + (Integer.parseInt(verseRef) - 1);							
+							// verseRef = "" + (Integer.parseInt(verseRef) - 1);
 						}
 						addVerse(temp + line.trim(), verseRef);
 					}
-					if(line.endsWith("<br><dd><br><dd>$"))
-						break;
+					if(line.endsWith("<br><dd><br><dd>$")) break;
 				}
 				else
 				{

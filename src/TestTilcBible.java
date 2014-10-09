@@ -29,6 +29,7 @@ public class TestTilcBible
 			{
 				PrintWriter pw = new PrintWriter("cei2008.imp");
 				pw.println(bible.toImp());
+				pw.close();
 			}
 		}
 	}
