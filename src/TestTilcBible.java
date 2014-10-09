@@ -1,5 +1,6 @@
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -19,8 +20,16 @@ public class TestTilcBible
 		else
 		{
 			bible.load();
-			XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
-			xo.output(bible.toOsis(), new FileWriter("cei2008.osis"));
+			if(args[0].equals("osis"))
+			{
+				XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
+				xo.output(bible.toOsis(), new FileWriter("cei2008.osis"));
+			}
+			if(args[0].equals("imp"))
+			{
+				PrintWriter pw = new PrintWriter("cei2008.imp");
+				pw.println(bible.toImp());
+			}
 		}
 	}
 }

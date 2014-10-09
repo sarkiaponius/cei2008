@@ -44,6 +44,7 @@ public class Bible
 	{
 		// logger generico
 		log = Logger.getLogger("COMPARC");
+		log.removeAllAppenders();
 		log.setLevel(Level.INFO);
 		PatternLayout pl = new PatternLayout(logLayout);
 		File lf = new File("log");
@@ -220,7 +221,7 @@ public class Bible
 								URLConnection uconn = new URL(url).openConnection();
 								uconn.getConnectTimeout();
 								log.info("Downloading " + acronym + "." + j);
-								log.info("... from " + url);
+//								log.info("... from " + url);
 								String chapFile = bookDir + "/" + acronym + "." + j;
 								page = downloadChapter(uconn.getInputStream(), chapFile);
 							}
@@ -271,5 +272,31 @@ public class Bible
 			e.printStackTrace();
 		}
 		return os.toString();
+	}
+	
+	public String toImp()
+	{
+		String imp = "$$$[ Module Heading ]\n\n";
+		Book book = null;
+		imp += "$$$[ Testament 1 Heading ]\n\n";
+		Iterator<Book> ir;
+		ir = ot.iterator();
+		log.info("Inizio scarico IMP OT...");
+		while(ir.hasNext())
+		{
+			book = ir.next();
+			log.info("Libro " + book.getAcronym());
+			imp += book.toImp();
+		}
+		imp += "\n$$$[ Testament 2 Heading ]\n\n";
+		ir = nt.iterator();
+		log.info("Inizio scarico IMP NT...");
+		while(ir.hasNext())
+		{
+			book = ir.next();
+			log.info("Libro " + book.getAcronym());
+			imp += book.toImp();
+		}
+		return imp;
 	}
 }
