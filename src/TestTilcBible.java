@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import bible.lachiesa.Bible;
+import bible.Bible;
 
 public class TestTilcBible
 {
