@@ -1,6 +1,7 @@
 package bible;
 
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 public class Verse
 {
@@ -68,7 +69,8 @@ public class Verse
 	
 	public Element toOsis(String swordAcronym, int chapter)
 	{
-		Element verse = new Element("verse");
+		Namespace def = Namespace.getNamespace("http://www.bibletechnologies.net/2003/OSIS/namespace");
+		Element verse = new Element("verse", def);
 		verse.setAttribute("osisID", swordAcronym + "." + chapter + "." + number);
 		verse.setText(text);
 		return verse;

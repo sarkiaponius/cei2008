@@ -14,6 +14,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jsoup.nodes.Document;
 
 public class Book
@@ -175,7 +176,8 @@ public class Book
 	{
 		Iterator<Chapter> citer = getChapters();
 		Chapter chap;
-		Element book = new Element("div");
+		Namespace def = Namespace.getNamespace("http://www.bibletechnologies.net/2003/OSIS/namespace");
+		Element book = new Element("div", def);
 		book.setAttribute("type", "book");
 		book.setAttribute("osisID", swordAcronym);
 		while(citer.hasNext())

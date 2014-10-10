@@ -14,7 +14,7 @@ Ruth
 2Chr
 Ezra
 Neh
-Esth
+#Esth
 Job
 Ps
 Prov
@@ -24,7 +24,7 @@ Isa
 Jer
 Lam
 Ezek
-Dan
+#Dan
 Hos
 Joel
 Amos

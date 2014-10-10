@@ -20,8 +20,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
+import org.jdom2.DocType;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 public class Bible
 {
@@ -158,20 +160,51 @@ public class Bible
 		Iterator<Book> ir;
 		ir = ot.iterator();
 		Document doc = new Document();
+		doc.setBaseURI("http://www.bibletechnologies.net/2003/OSIS/namespace");
 		Element osis = new Element("osis");
+		Namespace def = Namespace.getNamespace("http://www.bibletechnologies.net/2003/OSIS/namespace");
+		Namespace xsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		osis.setNamespace(def);
+		osis.addNamespaceDeclaration(xsi);
+		String schemaLocation = "http://www.bibletechnologies.net/2003/OSIS/namespace";
+		schemaLocation += " http://www.bibletechnologies.net/osisCore.2.1.1.xsd";
+		osis.setAttribute("schemaLocation", schemaLocation, xsi);
 		doc.setRootElement(osis);
 		Element osisText = new Element("osisText");
-		osisText.setAttribute("osisIDWork", "Cei2008");
+		osisText.setNamespace(def);
+		osisText.setAttribute("osisIDWork", "CEI");
+		osisText.setAttribute("lang", "it", Namespace.XML_NAMESPACE);
 		osis.addContent(osisText);
+		Element header = new Element("header", def);
+		osisText.addContent(header);
+		Element work = new Element("work", def);
+		header.addContent(work);
+		work.setAttribute("osisWork", "CEI");
+		Element title = new Element("title", def);
+		work.addContent(title);
+		title.addContent("Bibbia CEI 2008");
+		Element identifier = new Element("identifier", def);
+		identifier.setText("Bible.CEI");
+		work.addContent(identifier);
+		Element refSystem = new Element("refSystem", def);
+		refSystem.setText("Bible.Catholic");
+		work.addContent(refSystem);
+		work = new Element("work", def);
+		header.addContent(work);
+		work.setAttribute("osisWork", "defaultReferenceScheme");
+		refSystem = new Element("refSystem", def);
+		refSystem.setText("Bible.Catholic");
+		work.addContent(refSystem);
 		Element testament = new Element("div");
 		testament.setAttribute("type", "x-testament");
+		testament.setNamespace(def);
 		osisText.addContent(testament);
 		while(ir.hasNext())
 		{
 			Element book = ir.next().toOsis();
 			testament.addContent(book);
 		}
-		testament = new Element("div");
+		testament = new Element("div", def);
 		testament.setAttribute("type", "x-testament");
 		osisText.addContent(testament);
 		ir = nt.iterator();

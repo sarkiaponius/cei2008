@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 
@@ -83,19 +84,25 @@ public class Chapter
 
 	public void addVerse(String t, String n) throws NumberFormatException
 	{
-		int index = Integer.parseInt(n);
+		int number = Integer.parseInt(n);
+		int index = number - 1;
 		log.debug("Sono in addVerse: verseRef = " + n + ", indice = " + index);
 		int size = verses.size();
-		if(size > 0 && index - 1 > size && verses.get(index) != null)
+		if(size > 0 && number > size + 1)
+		{
+			log.warn("Versetto saltato, da " + size + " a " + number);
+			verses.add(index - 1, new Verse("[mancante]", number - 1));
+		}
+		if(size > 0 && index < size && verses.get(index) != null)
 		{
 			String text = verses.get(index).getText();
 			log.warn("Versetto già presente. Testo attuale: " + text);
 			verses.remove(index);
-			verses.add(new Verse(text, index));
+			verses.add(index, new Verse(text + " " + t, number));
 		}
 		else
 		{
-			verses.add(new Verse(t, index));
+			verses.add(new Verse(t, number));
 			log.debug("Versetto nuovo");
 		}
 	}
@@ -133,7 +140,8 @@ public class Chapter
 
 	public Element toOsis(String swordAcronym)
 	{
-		Element chapter = new Element("chapter");
+		Namespace def = Namespace.getNamespace("http://www.bibletechnologies.net/2003/OSIS/namespace");
+		Element chapter = new Element("chapter", def);
 		chapter.setAttribute("osisID", swordAcronym + "." + number);
 		Iterator<Verse> viter = getVerses();
 		while(viter.hasNext())
