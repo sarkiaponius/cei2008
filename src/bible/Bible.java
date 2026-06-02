@@ -248,15 +248,20 @@ public class Bible
             if(!acronym.startsWith("#"))
             {
               int j = 0;
+              int c = 0;
+              if(acronym.equals("Esth"))
+              {
+                c = 10;
+              }
               String chapterPage = "";
               String bookDir = bibleDir + "/" + acronym;
               new File(bookDir).mkdirs();
               while (!chapterPage.contains("e la ricerca non ha dato risultati"))
               {
-                String url = baseUrl + swordMap.getProperty(acronym) + "+" + ++j;
+                String url = baseUrl + swordMap.getProperty(acronym) + "+" + (++j + c);
                 URLConnection uconn = new URL(url).openConnection();
                 uconn.getConnectTimeout();
-                log.info("Downloading " + acronym + "." + j);
+                log.info("Downloading " + acronym + "." + (j + c));
 //								log.info("... from " + url);
                 String chapterFile = bookDir + "/" + acronym + "." + j;
                 chapterPage = downloadChapter(uconn.getInputStream());

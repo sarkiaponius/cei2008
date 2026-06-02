@@ -214,8 +214,8 @@ public class Chapter
             line = line.replaceAll("</p>", "");
             line = line.replaceAll("<i>", "");
             line = line.replaceAll("</i>", "");
-            line = line.replaceAll("«", "\"");
-            line = line.replaceAll("»", "\"");
+//            line = line.replaceAll("«", "\"");
+//            line = line.replaceAll("»", "\"");
             osisID += "." + verseRef;
             log.info("Versetto " + osisID);
             if(osisID.contains("Num.26"))
