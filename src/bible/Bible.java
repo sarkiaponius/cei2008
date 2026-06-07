@@ -1,7 +1,6 @@
 package bible;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -322,7 +321,7 @@ public class Bible
     {
       book = ir.next();
       log.info("Libro " + book.getAcronym());
-      imp += book.toImp();
+//      imp += book.toImp();
     }
     imp += "\n$$$[ Testament 2 Heading ]\n\n";
     ir = nt.iterator();
@@ -331,7 +330,7 @@ public class Bible
     {
       book = ir.next();
       log.info("Libro " + book.getAcronym());
-      imp += book.toImp();
+//      imp += book.toImp();
     }
     return imp;
   }

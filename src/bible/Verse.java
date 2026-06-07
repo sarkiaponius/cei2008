@@ -57,6 +57,11 @@ public class Verse
     text += t;
   }
 
+  public void prependText(String t)
+  {
+    text = t + text;
+  }
+
   public int getNumber()
   {
     return number;

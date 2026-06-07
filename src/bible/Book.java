@@ -115,18 +115,18 @@ public class Book
     return book;
   }
 
-  public String toImp()
-  {
-    String imp = "$$$" + swordAcronym + " 0:0\n\n";
-    Iterator<Chapter> citer = getChapters();
-    Chapter chap;
-    while (citer.hasNext())
-    {
-      chap = citer.next();
-      imp += chap.toImp(swordAcronym);
-    }
-    return imp;
-  }
+//  public String toImp()
+//  {
+//    String imp = "$$$" + swordAcronym + " 0:0\n\n";
+//    Iterator<Chapter> citer = getChapters();
+//    Chapter chap;
+//    while (citer.hasNext())
+//    {
+//      chap = citer.next();
+//      imp += chap.toImp(swordAcronym);
+//    }
+//    return imp;
+//  }
 
   public void setAcronym(String key)
   {

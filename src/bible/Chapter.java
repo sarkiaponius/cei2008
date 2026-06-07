@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.jdom2.Element;
@@ -18,7 +18,7 @@ import org.jsoup.nodes.TextNode;
 
 public class Chapter
 {
-  private ArrayList<Verse> verses;
+  private TreeMap<Integer, Verse> verses;
   private int number;
   private String swordAcronym;
   private String htmlRegex;
@@ -44,21 +44,21 @@ public class Chapter
   public Chapter(int n)
   {
     this();
-    verses = new ArrayList<Verse>();
+    verses = new TreeMap<Integer, Verse>();
     setNumber(n);
   }
 
   public Chapter(String n)
   {
     this();
-    verses = new ArrayList<Verse>();
+    verses = new TreeMap<Integer, Verse>();
     setNumber(Integer.parseInt(n));
   }
 
   public Chapter(Document d, int number)
   {
     this();
-    verses = new ArrayList<Verse>();
+    verses = new TreeMap<Integer, Verse>();
     {
       setNumber(number);
       Iterator<TextNode> parIter;
@@ -73,36 +73,44 @@ public class Chapter
 
   public void addVerse(Verse v)
   {
-    verses.add(v);
+    verses.put(v.getNumber(), v);
   }
 
   public void addVerse(String t, int n)
   {
-    verses.add(new Verse(t, n));
+    verses.put(n, new Verse(t, n));
   }
 
   public void addVerse(String t, String n) throws NumberFormatException
   {
-    int number = Integer.parseInt(n);
-    int index = number - 1;
-    log.debug("Sono in addVerse: verseRef = " + n + ", indice = " + index);
-    int size = verses.size();
-    if(size > 0 && number > size + 1)
+    int number;
+    String part = "";
+    if(n.endsWith("a") || n.endsWith("b"))
     {
-      log.warn("Versetto saltato, da " + size + " a " + number);
-      verses.add(index - 1, new Verse("[mancante]", number - 1));
-    }
-    if(size > 0 && index < size && verses.get(index) != null)
-    {
-      String text = verses.get(index).getText();
-      log.warn("Versetto già presente. Testo attuale: " + text);
-      verses.remove(index);
-      verses.add(index, new Verse(text + " " + t, number));
+      number = Integer.parseInt(n.substring(0, n.length() - 1));
+      part = n.substring(n.length() - 1);
+      log.warn("Parte: " + part);
     }
     else
     {
-      verses.add(new Verse(t, number));
+      number = Integer.parseInt(n);
+    }
+    log.debug("Sono in addVerse: verseRef = " + n);
+    if(verses.get(number) == null)
+    {
+      verses.put(number, new Verse(t, number));
       log.debug("Versetto nuovo");
+    }
+    else
+    {
+      if(part.equals("b"))
+      {
+        verses.get(number).appendText(" " + t);
+      }
+      else
+      {
+        verses.get(number).prependText(" " + t);
+      }
     }
   }
 
@@ -121,31 +129,32 @@ public class Chapter
     return number;
   }
 
-  public Iterator<Verse> getVerses()
-  {
-    return verses.iterator();
-  }
+//  public Iterator<Verse> getVerses()
+//  {
+//    return verses.iterator();
+//  }
 
-  public String toImp(String swordAcronym)
-  {
-    Iterator<Verse> viter = verses.iterator();
-    String imp = "$$$" + swordAcronym + " " + number + ":0\n";
-    while (viter.hasNext())
-    {
-      imp += viter.next().toImp(swordAcronym, number);
-    }
-    return imp;
-  }
+//  public String toImp(String swordAcronym)
+//  {
+//    Iterator<Verse> viter = verses.iterator();
+//    String imp = "$$$" + swordAcronym + " " + number + ":0\n";
+//    while (viter.hasNext())
+//    {
+//      imp += viter.next().toImp(swordAcronym, number);
+//    }
+//    return imp;
+//  }
 
   public Element toOsis(String swordAcronym)
   {
     Namespace def = Namespace.getNamespace("http://www.bibletechnologies.net/2003/OSIS/namespace");
     Element chapter = new Element("chapter", def);
     chapter.setAttribute("osisID", swordAcronym + "." + number);
-    Iterator<Verse> viter = getVerses();
-    while (viter.hasNext())
+//    Iterator<Verse> viter = getVerses();
+    for(Verse v : verses.values())
+//    while (viter.hasNext())
     {
-      Element verse = viter.next().toOsis(swordAcronym, number);
+      Element verse = v.toOsis(swordAcronym, number);
       chapter.addContent(verse);
     }
     return chapter;
@@ -190,7 +199,7 @@ public class Chapter
             if(line.contains("a</sup>") || line.contains("b</sup>"))
             {
               log.warn(osisID + ", numero versetto anomalo: " + verseRef);
-              line = line.replaceAll(".</sup>", "</sup>");
+//              line = line.replaceAll(".</sup>", "</sup>");
               verseRef = line.replaceAll("^.*<sup>", "");
               verseRef = verseRef.replaceAll("</sup>.*$", "");
               log.warn(osisID + ", numero versetto corretto in: " + verseRef);
