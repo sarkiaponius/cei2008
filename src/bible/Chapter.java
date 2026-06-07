@@ -214,14 +214,9 @@ public class Chapter
             line = line.replaceAll("</p>", "");
             line = line.replaceAll("<i>", "");
             line = line.replaceAll("</i>", "");
-//            line = line.replaceAll("«", "\"");
-//            line = line.replaceAll("»", "\"");
+            line = line.replaceAll("»([A-Z])", "«$1");
             osisID += "." + verseRef;
             log.info("Versetto " + osisID);
-            if(osisID.contains("Num.26"))
-            {
-              // verseRef = "" + (Integer.parseInt(verseRef) - 1);
-            }
             addVerse(temp + line.trim(), verseRef);
           }
           if(line.endsWith("<br><dd><br><dd>$"))
